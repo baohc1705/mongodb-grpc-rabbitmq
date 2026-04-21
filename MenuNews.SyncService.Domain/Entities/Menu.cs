@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MenuNews.SyncService.Domain.Common;
 
-namespace MenuNews.SyncService.Domain.Entities
+namespace MenuNews.SyncService.Domain.Entities;
+
+public class Menu : BaseEntity
 {
-    internal class Menu
-    {
-    }
+    public string Name { get; set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
+    public int DisplayOrder { get; set; }
+    public ICollection<NewsMenu> NewsMenus { get; set; } = new List<NewsMenu>();
 }

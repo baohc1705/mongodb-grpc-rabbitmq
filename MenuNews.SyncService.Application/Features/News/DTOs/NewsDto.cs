@@ -1,18 +1,14 @@
-﻿using MenuNews.SyncService.Domain.Common;
-using MenuNews.SyncService.Domain.Enums;
+﻿using MenuNews.SyncService.Domain.Enums;
 
-namespace MenuNews.SyncService.Domain.Entities;
+namespace MenuNews.SyncService.Application.Features.News.DTOs;
 
-public class News : BaseEntity
+public class NewsDto
 {
+    public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
     public string Summary { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public string Thumbnail { get; set; } = string.Empty;
-    public NewsStatus Status { get; set; }
     public DateTime? PublishedAt { get; set; }
-    public int ViewCount { get; set; }
-
-    public ICollection<NewsMenu> NewsMenus { get; set; } = new List<NewsMenu>();
 }
