@@ -9,20 +9,20 @@ using MongoDB.Driver;
 
 namespace MenuNews.SyncService.Infrastructure.Messaging.Consumer;
 
-public sealed class MenuCreatedConsumer : DirectConsumerBase<MenuSyncEvent>
+public sealed class MenuUpsertedConsumer : DirectConsumerBase<MenuSyncEvent>
 {
     private readonly MongoDbContext context;
     
-    public MenuCreatedConsumer(IOptions<RabbitMqSettings> settings, ILogger<MenuCreatedConsumer> logger, MongoDbContext context) : base(settings, logger)
+    public MenuUpsertedConsumer(IOptions<RabbitMqSettings> settings, ILogger<MenuUpsertedConsumer> logger, MongoDbContext context) : base(settings, logger)
     {
         this.context = context;
     }
 
     protected override string QueueName => RabbitMqConstants.MenuSyncQueue;
 
-    protected override IEnumerable<string> BindingKeys => new[] { RabbitMqConstants.MenuSyncRoutingKey };
+    protected override IEnumerable<string> BindingKeys => new[] { MenuRoutingKey.Upserted };
 
-    protected override string ConsumerName => nameof(MenuCreatedConsumer);
+    protected override string ConsumerName => nameof(MenuUpsertedConsumer);
 
     protected override async Task HandleMessageAsync(MenuSyncEvent message, string rountingKey, CancellationToken cancellationToken)
     {

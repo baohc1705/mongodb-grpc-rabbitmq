@@ -28,7 +28,7 @@ public sealed class NewsReadModel
     [BsonElement("news_created_at")]
     public DateTime CreatedAt { get; set; }
     [BsonElement("news_updated_at")]
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
     [BsonElement("news_menus")]
     public List<MenuEmbedded> Menus { get; set; } = [];
 }

@@ -65,33 +65,33 @@ public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNe
 
             // NewsSyncEvent: News document embeds the parent Menu
 
-            //newsSyncEvents.Add(new NewsSyncEvent
-            //{
-            //    EventType = Domain.Enums.SyncEventType.UPSERT,
-            //    NewsId = news.Id,
-            //    Title = news.Title,
-            //    Slug = news.Slug,
-            //    Summary = news.Summary,
-            //    Content = news.Content,
-            //    Thumbnail = news.Thumbnail,
-            //    Status = news.Status,
-            //    PublishedAt = news.PublishedAt,
-            //    ViewCount = news.ViewCount,
-            //    IsActive = news.IsActive,
-            //    DisplayOrder = item.DisplayOrder,
-            //    CreatedAt = news.CreatedAt,
-            //    Menus = new List<MenuSyncItem>
-            //    {
-            //        new MenuSyncItem
-            //        {
-            //            MenuId = menu.Id,
-            //            Name = menu.Name,
-            //            Slug = menu.Slug,
-            //            DisplayOrder = menu.DisplayOrder,
-            //            NmDisplayOrder = item.DisplayOrder
-            //        }
-            //    }
-            //});
+            newsSyncEvents.Add(new NewsSyncEvent
+            {
+                EventType = Domain.Enums.SyncEventType.UPSERT,
+                NewsId = news.Id,
+                Title = news.Title,
+                Slug = news.Slug,
+                Summary = news.Summary,
+                Content = news.Content,
+                Thumbnail = news.Thumbnail,
+                Status = news.Status,
+                PublishedAt = news.PublishedAt,
+                ViewCount = news.ViewCount,
+                IsActive = news.IsActive,
+                DisplayOrder = item.DisplayOrder,
+                CreatedAt = news.CreatedAt,
+                Menus = new List<MenuSyncItem>
+                {
+                    new MenuSyncItem
+                    {
+                        MenuId = menu.Id,
+                        Name = menu.Name,
+                        Slug = menu.Slug,
+                        DisplayOrder = menu.DisplayOrder,
+                        NmDisplayOrder = item.DisplayOrder
+                    }
+                }
+            });
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -108,12 +108,12 @@ public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNe
             News = newsSyncItems
         };
 
-        await publisher.PublishAsync(menuSyncEvent, RabbitMqConstants.MenuSyncRoutingKey, cancellationToken);
+        await publisher.PublishAsync(menuSyncEvent, MenuRoutingKey.Upserted, cancellationToken);
 
-        //foreach (var newsEvent in newsSyncEvents)
-        //{
-        //    await publisher.PublishAsync(RabbitMqConstants.NewsExchange, RabbitMqConstants.NewsSyncRoutingKey, newsEvent, cancellationToken);
-        //}
+        foreach (var newsEvent in newsSyncEvents)
+        {
+            await publisher.PublishAsync(newsEvent, NewsRountingKey.Upserted, cancellationToken);
+        }
 
         return mapper.Map<MenuDto>(menu);
     }

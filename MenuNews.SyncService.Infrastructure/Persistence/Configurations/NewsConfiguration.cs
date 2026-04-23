@@ -18,25 +18,25 @@ public sealed class NewsConfiguration : IEntityTypeConfiguration<News>
 
         builder.Property(n => n.Title)
             .HasColumnName("new_title")
-            .HasMaxLength(500);
+            ;
             
 
         builder.Property(n => n.Slug)
             .HasColumnName("new_slug")
-            .HasMaxLength(500);
+            ;
 
         builder.HasIndex(n => n.Slug).IsUnique();
 
         builder.Property(n => n.Summary)
             .HasColumnName("new_summary")
-            .HasMaxLength(1000);
+            ;
 
         builder.Property(n => n.Content)
             .HasColumnName("new_content");
 
         builder.Property(n => n.Thumbnail)
             .HasColumnName("new_thumbnail")
-            .HasMaxLength(500);
+            ;
 
         builder.Property(n => n.Status)
             .HasConversion(
@@ -56,7 +56,6 @@ public sealed class NewsConfiguration : IEntityTypeConfiguration<News>
 
         builder.Property(n => n.CreatedAt)
             .HasColumnName("new_created_at");
-            
 
         builder.Property(n => n.UpdatedAt)
             .HasColumnName("new_updated_at");
