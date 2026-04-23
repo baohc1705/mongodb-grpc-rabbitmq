@@ -1,6 +1,15 @@
-﻿using MenuNews.SyncService.Domain.Interfaces;
-using MenuNews.SyncService.Infrastructure.Persistence.WriteDb;
-using MenuNews.SyncService.Infrastructure.Persistence.WriteDb.Repositories;
+﻿using MenuNews.SyncService.Application.Common.Interfaces;
+using MenuNews.SyncService.Infrastructure.Messaging;
+using MenuNews.SyncService.Infrastructure.Messaging.Consumer;
+using MenuNews.SyncService.Infrastructure.Messaging.Publisher;
+using MenuNews.SyncService.Infrastructure.Messaging.Settings;
+using MenuNews.SyncService.Infrastructure.Persistence;
+using MenuNews.SyncService.Infrastructure.Persistence.Repositories;
+using MenuNews.SyncService.Infrastructure.Persistence.UnitOfWork;
+using MenuNews.SyncService.Infrastructure.ReadDb;
+using MenuNews.SyncService.Infrastructure.ReadDb.ClassMaps;
+using MenuNews.SyncService.Infrastructure.ReadDb.Repositories;
+using MenuNews.SyncService.Infrastructure.ReadDb.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,16 +20,33 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructureService(this IServiceCollection services, IConfiguration configuration)
     {
-        // Connection sql server
-        services.AddDbContext<AppDbContext>(option =>
+        // SQL Server
+        services.AddDbContext<AppDbContext>(opt =>
         {
-            option.UseSqlServer(configuration.GetConnectionString(typeof(AppDbContext).Name));
+            opt.UseSqlServer(configuration.GetConnectionString(nameof(AppDbContext)));
         });
 
-        services.AddScoped<IUnitOfWork, UnitOfWork >();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IMenuRepository, MenuRepository>();
         services.AddScoped<INewsRepository, NewsRepository>();
         services.AddScoped<INewsMenuRepository, NewsMenuRepository>();
+
+        // MongoDB
+        MongoClassMaps.Register();
+
+        services.Configure<MongoDbSettings>(
+            configuration.GetSection(nameof(MongoDbSettings))
+        );
+
+        services.AddSingleton<MongoDbContext>();
+        services.AddScoped<IMenuReadRepository, MenuReadRepository>();
+
+        // Rabbit Mq
+        services.Configure<RabbitMqSettings>(
+            configuration.GetSection(nameof(RabbitMqSettings)));
+        services.AddSingleton<RabbitMqConnectionManager>();
+        services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
+        services.AddHostedService<RabbitMqConsumerService>();
         return services;
     }
 }

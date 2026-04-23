@@ -1,7 +1,8 @@
-﻿using MediatR;
-using MenuNews.SyncService.Application.Features.Menus.Commands.CreateMenu;
-using MenuNews.SyncService.Application.Features.Menus.Queries.GetAllMenus;
+using MediatR;
+using MenuNews.SyncService.Application.Features.Menus.Commands.CreateMenuWithNews;
+using MenuNews.SyncService.Application.Features.Menus.Queries.GetMenus;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace MenuNews.SyncService.RestfulApi.Controllers
 {
@@ -17,34 +18,22 @@ namespace MenuNews.SyncService.RestfulApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllMenus(CancellationToken cancellationToken)
+        public async Task<IActionResult> Get()
         {
-            var query = new GetAllMenusQuery();
-            var result = await mediator.Send(query, cancellationToken);
+            var sw = Stopwatch.StartNew();
+            var result = await mediator.Send(new GetMenusQuery());
+            sw.Stop();
+            Console.WriteLine($"Controller: {sw.ElapsedMilliseconds}");
             return Ok(result);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateMenu([FromBody] CreateMenuCommand request, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreateMenu([FromBody] CreateMenuWithNewsCommand command, CancellationToken cancellationToken)
         {
-            var command = new CreateMenuCommand
-            {
-                Name = request.Name,
-                Slug = request.Slug,
-                DisplayOrder = request.DisplayOrder,
-                NewsItems = request.NewsItems.Select(ni => new CreateNewsItemRequest
-                {
-                    Title = ni.Title,
-                    Slug = ni.Slug,
-                    Summary = ni.Summary,
-                    Content = ni.Content,
-                    Thumbnail = ni.Thumbnail,
-                    PublishedAt = ni.PublishedAt,
-                    DisplayOrder = ni.DisplayOrder
-                }).ToList()
-            };
-            var menuId = await mediator.Send(command, cancellationToken);
-            return CreatedAtAction(nameof(GetAllMenus), new { id = menuId }, null);
+            var result = await mediator.Send(command, cancellationToken);
+            return Ok(result);
         }
+
+       
     }
 }

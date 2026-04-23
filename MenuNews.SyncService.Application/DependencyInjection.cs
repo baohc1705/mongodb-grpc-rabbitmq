@@ -1,4 +1,4 @@
-﻿using MenuNews.SyncService.Application.Common.Mappers;
+﻿using MenuNews.SyncService.Application.Mappers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MenuNews.SyncService.Application;

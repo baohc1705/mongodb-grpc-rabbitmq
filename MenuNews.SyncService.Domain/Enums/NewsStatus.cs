@@ -2,7 +2,7 @@
 
 public enum NewsStatus
 {
-    DARF,
+    DRAF,
     PUBLISHED,
     ARCHIVED,
     SCHEDULED
