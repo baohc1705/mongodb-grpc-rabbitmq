@@ -1,61 +1,78 @@
 ﻿using MenuNews.SyncService.Application.Common.Interfaces;
+using MenuNews.SyncService.Infrastructure.Messaging.Settings;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver.Core.Misc;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
 
 namespace MenuNews.SyncService.Infrastructure.Messaging.Publisher;
 
-public sealed class RabbitMqPublisher : IRabbitMqPublisher
+public sealed class RabbitMqPublisher : IRabbitMqPublisher, IAsyncDisposable
 {
-    private readonly RabbitMqConnectionManager connectionManager;
+    private readonly RabbitMqSettings settings;
     private readonly ILogger<RabbitMqPublisher> logger;
     private IConnection? connection;
     private IChannel? channel;
 
-    public RabbitMqPublisher(RabbitMqConnectionManager connectionManager, ILogger<RabbitMqPublisher> logger)
+    public RabbitMqPublisher(IOptions<RabbitMqSettings> settings, ILogger<RabbitMqPublisher> logger)
     {
-        this.connectionManager = connectionManager;
+        this.settings = settings.Value;
         this.logger = logger;
     }
 
-    public async Task PublishAsync<T>(string exchange, string routingKey, T message, CancellationToken ct = default) where T : class
+    public async Task PublishAsync<T>(T message, string routingKey, CancellationToken ct = default) where T : class
     {
-        connection = await connectionManager.GetConnectionAsync(ct);
+        await EnsureConnectionAsync(ct);
 
-        channel = await connection.CreateChannelAsync(cancellationToken: ct);
-
-        await channel.ExchangeDeclareAsync(
-            exchange: exchange,
-            type: ExchangeType.Direct,
-            durable: true,
-            autoDelete: false,
-            cancellationToken: ct
-        );
-
-       
         var json = JsonSerializer.Serialize(message);
         var body = Encoding.UTF8.GetBytes(json);
-        var messageId = Guid.NewGuid().ToString();
 
         var props = new BasicProperties
         {
             Persistent = true,
             ContentType = "application/json",
-            ContentEncoding = "utf-8",
-            MessageId = messageId,
-            Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
         };
 
-        await channel.BasicPublishAsync(
-            exchange: exchange,
-            routingKey: routingKey,
-            mandatory: true,
-            basicProperties: props,
-            body: body,
+        await channel!.BasicPublishAsync(
+            exchange: settings.DirectExchange, 
+            routingKey: routingKey, 
+            mandatory: false, 
+            basicProperties: props, 
+            body: body, 
             cancellationToken: ct
         );
 
-        logger.LogDebug($"Published -> exchange={exchange}, routingKey={routingKey}, messageId={messageId}");
+        logger.LogInformation($"Published to exchange='{settings.DirectExchange}' with routingKey='{routingKey}'");
+       
+    }
+    public async ValueTask DisposeAsync()
+    {
+        if (channel is not null) await channel.CloseAsync();
+        if (connection is not null) await connection.CloseAsync();
+    }
+    private async Task EnsureConnectionAsync(CancellationToken ct)
+    {
+        if (connection is { IsOpen: true }) return;
+        var factory = new ConnectionFactory
+        {
+            HostName = settings.HostName,
+            UserName = settings.UserName,
+            Password = settings.Password
+        };
+
+        connection = await factory.CreateConnectionAsync();
+        channel = await connection.CreateChannelAsync();
+
+        await channel.ExchangeDeclareAsync(
+            exchange: settings.DirectExchange, 
+            type: ExchangeType.Direct, 
+            durable: true, 
+            autoDelete: false, 
+            cancellationToken: ct
+        );
+
+        logger.LogInformation($"Connected to exchange '{settings.DirectExchange}'");
     }
 }

@@ -108,7 +108,7 @@ public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNe
             News = newsSyncItems
         };
 
-        await publisher.PublishAsync(RabbitMqConstants.MenuExchange, RabbitMqConstants.MenuSyncRoutingKey, menuSyncEvent, cancellationToken);
+        await publisher.PublishAsync(menuSyncEvent, RabbitMqConstants.MenuSyncRoutingKey, cancellationToken);
 
         //foreach (var newsEvent in newsSyncEvents)
         //{

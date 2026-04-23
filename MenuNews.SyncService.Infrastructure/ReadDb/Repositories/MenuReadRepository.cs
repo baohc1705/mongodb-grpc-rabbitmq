@@ -16,22 +16,6 @@ public sealed class MenuReadRepository : IMenuReadRepository
         collection = this.context.MenuReadModel;
     }
 
-    public async Task<(List<MenuDetailDto> Items, long TotalCount)> GetAllAsync(bool activeOnly, int skip, int take, CancellationToken ct = default)
-    {
-        var filter = activeOnly
-            ? Builders<MenuReadModel>.Filter.Eq(m => m.IsActive, true)
-            : Builders<MenuReadModel>.Filter.Empty;
-
-        var total = await collection.CountDocumentsAsync(filter, cancellationToken: ct);
-        var docs = await collection
-            .Find(filter)
-            .SortBy(m => m.DisplayOrder)
-            .Skip(skip)
-            .Limit(take)
-            .ToListAsync(ct);
-        return (docs.Select(MapToDto).ToList(), total);
-    }
-
     public async Task<IReadOnlyCollection<MenuDetailDto>> GetAllAsync(CancellationToken ct = default)
     {
         var menus = await collection
@@ -41,20 +25,26 @@ public sealed class MenuReadRepository : IMenuReadRepository
         return menus.Select(MapToDto).ToList();
     }
 
-    public async Task<MenuDetailDto?> GetByIdAsync(Guid menuId, CancellationToken ct = default)
+    private static MenuDetailDto MapToDto(MenuReadModel doc)
     {
-        var filter = Builders<MenuReadModel>.Filter.Eq(m => m.Id, menuId);
-        var docs = await collection
-            .Find(filter)
-            .FirstOrDefaultAsync(ct);
-        return docs is null ? null : MapToDto(docs);
+        return new MenuDetailDto(
+            doc.Id, 
+            doc.Name, 
+            doc.Slug, 
+            doc.DisplayOrder, 
+            doc.IsActive, 
+            doc.CreatedAt,
+            doc.News.Select(n => new NewsEmbeddedDto(
+                n.NewsId, 
+                n.Title, 
+                n.Slug, 
+                n.Summary, 
+                n.Thumbnail,
+                n.Status, 
+                n.PublishedAt, 
+                n.ViewCount, 
+                n.CreatedAt, 
+                n.DisplayOrder
+        )).ToList());
     }
-
-    private static MenuDetailDto MapToDto(MenuReadModel doc) => new(
-        doc.Id, doc.Name, doc.Slug, doc.DisplayOrder, doc.IsActive, doc.CreatedAt,
-        doc.News.Select(n => new NewsEmbeddedDto(
-            n.NewsId, n.Title, n.Slug, n.Summary, n.Thumbnail,
-            n.Status, n.PublishedAt, n.ViewCount, n.CreatedAt, n.DisplayOrder
-        )).ToList()
-    );
 }

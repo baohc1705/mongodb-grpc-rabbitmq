@@ -16,4 +16,8 @@
     <ProjectReference Include="..\MenuNews.SyncService.Domain\MenuNews.SyncService.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\News\" />
+  </ItemGroup>
+
 </Project>
