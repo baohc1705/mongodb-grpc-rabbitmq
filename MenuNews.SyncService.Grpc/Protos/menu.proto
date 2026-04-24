@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+
 option csharp_namespace = "MenuNews.SyncService.Grpc.Protos";
 
 package menu;
@@ -15,9 +17,8 @@ message CreateNewsItemProto {
   string summary      = 3;
   string content      = 4;
   string thumbnail    = 5;
-  string status       = 6;
-  string published_at = 7;
-  int32  display_order = 8;
+  google.protobuf.Timestamp published_at = 6;
+  int32  display_order = 7;
 }
 
 message CreateMenuWithNewsRequest {
@@ -34,9 +35,9 @@ message NewsEmbeddedProto {
   string summary       = 4;
   string thumbnail     = 5;
   string status        = 6;
-  string published_at  = 7;
+  google.protobuf.Timestamp published_at  = 7;
   int32  view_count    = 8;
-  string created_at    = 9;
+  google.protobuf.Timestamp created_at    = 9;
   int32  display_order = 10;
 }
 
@@ -46,7 +47,7 @@ message MenuResponse {
   string slug          = 3;
   int32  display_order = 4;
   bool   is_active     = 5;
-  string created_at    = 6;
+  google.protobuf.Timestamp created_at    = 6;
 }
 
 message MenuDetailResponse {
@@ -55,7 +56,7 @@ message MenuDetailResponse {
   string slug          = 3;
   int32  display_order = 4;
   bool   is_active     = 5;
-  string created_at    = 6;
+  google.protobuf.Timestamp created_at    = 6;
   repeated NewsEmbeddedProto news = 7;
 }
 

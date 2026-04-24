@@ -1,4 +1,5 @@
-﻿using Grpc.Core;
+using Google.Protobuf.WellKnownTypes;
+using Grpc.Core;
 using MediatR;
 using MenuNews.SyncService.Application.Features.Menus.Commands.CreateMenuWithNews;
 using MenuNews.SyncService.Application.Features.Menus.Queries.GetMenus;
@@ -27,10 +28,12 @@ public class MenuGrpcService : MenuService.MenuServiceBase
                 Summary: n.Summary,
                 Content: n.Content,
                 Thumbnail: n.Thumbnail,
-                PublishedAt: DateTime.Parse(n.PublishedAt),
+                PublishedAt: n.PublishedAt?.ToDateTime(),
                 DisplayOrder: n.DisplayOrder
             )).ToList()
         );
+
+        Console.WriteLine($"[gRPC] CreateMenuWithNews received {request.NewsItems.Count} news items in request.");
 
         var result = await mediator.Send(command, context.CancellationToken);
 
@@ -41,7 +44,7 @@ public class MenuGrpcService : MenuService.MenuServiceBase
             Slug = result.Slug,
             DisplayOrder = result.DisplayOrder,
             IsActive = result.IsActive,
-            CreatedAt = result.CreatedAt.ToString("o")
+            CreatedAt = Timestamp.FromDateTime(DateTime.SpecifyKind(result.CreatedAt, DateTimeKind.Utc)),
         };
     }
 
@@ -59,7 +62,7 @@ public class MenuGrpcService : MenuService.MenuServiceBase
                 Slug = m.Slug,
                 DisplayOrder = m.DisplayOrder,
                 IsActive = m.IsActive,
-                CreatedAt = m.CreatedAt.ToString("o")
+                CreatedAt = Timestamp.FromDateTime(DateTime.SpecifyKind(m.CreatedAt, DateTimeKind.Utc))
             };
 
             detail.News.AddRange(m.News.Select(n => new NewsEmbeddedProto
@@ -70,9 +73,9 @@ public class MenuGrpcService : MenuService.MenuServiceBase
                 Summary = n.Summary,
                 Thumbnail = n.Thumbnail ?? string.Empty,
                 Status = n.Status,
-                PublishedAt = n.PublishedAt?.ToString("o") ?? string.Empty,
+                PublishedAt = n.PublishedAt.HasValue ? Timestamp.FromDateTime(DateTime.SpecifyKind(n.PublishedAt.Value, DateTimeKind.Utc)) : null,
                 ViewCount = n.ViewCount,
-                CreatedAt = n.CreatedAt.ToString("o"),
+                CreatedAt = Timestamp.FromDateTime(DateTime.SpecifyKind(n.CreatedAt, DateTimeKind.Utc)),
                 DisplayOrder = n.DisplayOrder
             }));
             return detail;

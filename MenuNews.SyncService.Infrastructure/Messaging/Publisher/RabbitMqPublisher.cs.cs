@@ -2,7 +2,6 @@
 using MenuNews.SyncService.Infrastructure.Messaging.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MongoDB.Driver.Core.Misc;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;

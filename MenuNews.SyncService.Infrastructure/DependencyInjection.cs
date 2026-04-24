@@ -44,7 +44,7 @@ public static class DependencyInjection
         // Rabbit Mq
         services.Configure<RabbitMqSettings>(
             configuration.GetSection(nameof(RabbitMqSettings)));
-        services.AddSingleton<RabbitMqConnectionManager>();
+    
         services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
         services.AddHostedService<MenuUpsertedConsumer>();
         services.AddHostedService<NewsUpsertedConsumer>();
