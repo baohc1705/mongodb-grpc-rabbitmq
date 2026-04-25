@@ -1,0 +1,126 @@
+using AutoMapper;
+using MediatR;
+using MenuNews.SyncService.Application.Common.Interfaces;
+using MenuNews.SyncService.Application.Common.Exceptions;
+using MenuNews.SyncService.Application.DTOs;
+using System.Threading.Tasks;
+using MenuNews.SyncService.Domain.Entities;
+using MenuNews.SyncService.Domain.Events;
+using MenuNews.SyncService.Domain.Enums;
+using System.Text.Json;
+using MenuNews.SyncService.Application.Constants;
+
+namespace MenuNews.SyncService.Application.Features.News.Commands.CreateNewsWithMenusOutbox;
+
+public class CreateNewsWithMenusOutboxCommandHandler : IRequestHandler<CreateNewsWithMenusOutboxCommand, NewsDto>
+{
+    private readonly IUnitOfWork unitOfWork;
+    private readonly IMapper mapper;
+
+    public CreateNewsWithMenusOutboxCommandHandler(IMapper mapper, IUnitOfWork unitOfWork)
+    {
+        this.mapper = mapper;
+        this.unitOfWork = unitOfWork;
+    }
+
+    public async Task<NewsDto> Handle(CreateNewsWithMenusOutboxCommand request, CancellationToken cancellationToken)
+    {
+        var menuSlugs = request.MenuItems.Select(m => m.Slug).ToList();
+
+        await ValidateDuplicateMenuSlugs(menuSlugs);
+
+        if (await unitOfWork.NewsRepository.ExistsAsync(n => n.Slug.Equals(request.Slug)))
+            throw new BusinessException($"News has slug [{request.Slug}] existed");
+
+        var newsEntity = Domain.Entities.News.Create(
+            request.Title,
+            request.Slug,
+            request.Summary,
+            request.Content,
+            request.Thumbnail,
+            request.PublishedAt
+        );
+
+        await unitOfWork.NewsRepository.AddAsync(newsEntity);
+
+        var (menuEntities, juctions) = SaveMenuAndJunctions(request.MenuItems, newsEntity);
+
+        await unitOfWork.MenuRepository.AddRangeAsync(menuEntities);
+        await unitOfWork.NewsMenuRepository.AddRangeAsync(juctions);
+
+        var newsEvent = BuildNewsSyncEvent(newsEntity, menuEntities, juctions);
+        var payload = JsonSerializer.Serialize(newsEvent);
+
+        var outboxMessage = OutboxMessage.Create(NewsRountingKey.Upserted, payload);
+
+        await unitOfWork.OutboxMessageRepository.AddAsync(outboxMessage);
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return mapper.Map<NewsDto>(newsEntity);
+
+    }
+
+    private NewsSyncEvent BuildNewsSyncEvent(
+        Domain.Entities.News news,
+        List<Menu> menuEntities,
+        List<NewsMenu> junctions)
+    {
+        var menus = menuEntities.Select(menu =>
+        {
+            var junction = junctions.First(j => j.MenuId == menu.Id);
+            return new MenuSyncItem
+            {
+                MenuId = menu.Id,
+                Name = menu.Name,
+                Slug = menu.Slug,
+                DisplayOrder = menu.DisplayOrder,
+                NmDisplayOrder = junction.DisplayOrder
+            };
+        }).ToList();
+
+        return new NewsSyncEvent
+        {
+            EventType = SyncEventType.UPSERT,
+            NewsId = news.Id,
+            Title = news.Title,
+            Slug = news.Slug,
+            Summary = news.Summary,
+            Content = news.Content,
+            Thumbnail = news.Thumbnail,
+            Status = news.Status,
+            PublishedAt = news.PublishedAt,
+            ViewCount = news.ViewCount,
+            IsActive = news.IsActive,
+            CreatedAt = news.CreatedAt,
+            UpdatedAt = news.UpdatedAt,
+            Menus = menus
+        };
+    }
+
+    private (List<Menu>, List<NewsMenu>) SaveMenuAndJunctions(List<MenusItemRequest> menuItems, Domain.Entities.News newsEntity)
+    {
+        var menuEntities = new List<Menu>();
+        var junctions = new List<NewsMenu>();
+
+        foreach (var item in menuItems)
+        {
+            var menu = Menu.Create(item.Name, item.Slug, item.DisplayOrder);
+            menuEntities.Add(menu);
+
+            var junction = NewsMenu.Create(menu.Id, newsEntity.Id, item.DisplayOrder);
+            junctions.Add(junction);
+        }
+
+        return (menuEntities, junctions);
+    }
+
+    private async Task ValidateDuplicateMenuSlugs(List<string> menuSlugs)
+    {
+        if (menuSlugs.Count != menuSlugs.Distinct().Count())
+            throw new BusinessException($"Menu slugs duplicate in request");
+        var menuSlugExisted = await unitOfWork.MenuRepository.GetAllAsync(m => menuSlugs.Contains(m.Slug));
+        if (menuSlugExisted.Any())
+            throw new BusinessException($"Menu has slugs existed");
+    }
+}

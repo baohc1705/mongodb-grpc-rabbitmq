@@ -8,17 +8,20 @@ public sealed class UnitOfWork : IUnitOfWork
     private IMenuRepository menuRepository;
     private INewsRepository newsRepository;
     private INewsMenuRepository newsMenuRepository;
+    private IOutboxMessageRepository outboxMessageRepository;
 
     public UnitOfWork(
-        AppDbContext context, 
-        IMenuRepository menuRepository, 
-        INewsRepository newsRepository, 
-        INewsMenuRepository newsMenuRepository)
+        AppDbContext context,
+        IMenuRepository menuRepository,
+        INewsRepository newsRepository,
+        INewsMenuRepository newsMenuRepository,
+        IOutboxMessageRepository outboxMessageRepository)
     {
         this.context = context;
         this.menuRepository = menuRepository;
         this.newsRepository = newsRepository;
         this.newsMenuRepository = newsMenuRepository;
+        this.outboxMessageRepository = outboxMessageRepository;
     }
 
     public IMenuRepository MenuRepository => menuRepository;
@@ -26,6 +29,8 @@ public sealed class UnitOfWork : IUnitOfWork
     public INewsRepository NewsRepository => newsRepository;
 
     public INewsMenuRepository NewsMenuRepository => newsMenuRepository;
+
+    public IOutboxMessageRepository OutboxMessageRepository => outboxMessageRepository;
 
     public async ValueTask DisposeAsync()
     {

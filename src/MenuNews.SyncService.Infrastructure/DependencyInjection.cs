@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IMenuRepository, MenuRepository>();
         services.AddScoped<INewsRepository, NewsRepository>();
         services.AddScoped<INewsMenuRepository, NewsMenuRepository>();
+        services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
 
         // MongoDB
         MongoClassMaps.Register();
@@ -49,8 +50,10 @@ public static class DependencyInjection
         services.AddHostedService<MenuUpsertedConsumer>();
         services.AddHostedService<MenuUpdatedConsumer>();
         services.AddHostedService<MenuDeletedConsumer>();
-
+        
         services.AddHostedService<NewsUpsertedConsumer>();
+
+        services.AddHostedService<OutboxProcessor>();
         return services;
     }
 }
