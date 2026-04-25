@@ -1,6 +1,0 @@
-@MenuNews.SyncService.RestfulApi_HostAddress = http://localhost:5214
-
-GET {{MenuNews.SyncService.RestfulApi_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
