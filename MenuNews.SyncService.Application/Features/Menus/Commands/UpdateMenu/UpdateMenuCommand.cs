@@ -3,7 +3,7 @@ using MenuNews.SyncService.Application.DTOs;
 
 namespace MenuNews.SyncService.Application.Features.Menus.Commands.UpdateMenu;
 
-public record class UpdateMenuCommand(
+public record UpdateMenuCommand(
     Guid Id,
     string Name,
     string Slug,

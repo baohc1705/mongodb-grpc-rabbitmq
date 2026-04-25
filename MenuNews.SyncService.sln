@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MenuNews.SyncService.Applic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MenuNews.SyncService.Grpc", "MenuNews.SyncService.Grpc\MenuNews.SyncService.Grpc.csproj", "{64E65E2F-E129-41C8-A385-8D28F77BC376}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,13 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B8560548-DA5D-4C9F-9DB3-2954119A5315} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{8E4E8674-2A6E-4808-A032-958A0E6E8323} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{33EEF907-79F8-4077-9893-DCC1F3A61A40} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{D2A8F9A5-4A1B-4C2A-AAD6-8C7CF818730B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{64E65E2F-E129-41C8-A385-8D28F77BC376} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {703EF7EA-2A27-4414-9EB4-DB80178033A7}

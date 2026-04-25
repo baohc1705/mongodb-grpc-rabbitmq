@@ -1,5 +1,6 @@
 using MediatR;
 using MenuNews.SyncService.Application.Features.Menus.Commands.CreateMenuWithNews;
+using MenuNews.SyncService.Application.Features.Menus.Commands.DeleteMenu;
 using MenuNews.SyncService.Application.Features.Menus.Commands.UpdateMenu;
 using MenuNews.SyncService.Application.Features.Menus.Queries.GetMenus;
 using Microsoft.AspNetCore.Mvc;
@@ -42,6 +43,13 @@ namespace MenuNews.SyncService.RestfulApi.Controllers
                 return BadRequest("Id not same");
             var res = await mediator.Send(command, cancellationToken);
             return Ok(res);
+        }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteMenu(Guid id, CancellationToken ct)
+        {
+            await mediator.Send(new DeleteMenuCommand(Id: id), ct);
+            return NoContent();
         }
     }
 }
