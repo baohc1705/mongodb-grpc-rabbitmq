@@ -47,6 +47,7 @@ public static class DependencyInjection
     
         services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
         services.AddHostedService<MenuUpsertedConsumer>();
+        services.AddHostedService<MenuUpdatedConsumer>();
         services.AddHostedService<NewsUpsertedConsumer>();
         return services;
     }

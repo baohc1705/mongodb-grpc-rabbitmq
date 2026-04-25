@@ -4,13 +4,10 @@ namespace MenuNews.SyncService.Domain.Entities;
 
 public sealed class Menu : BaseEntity
 {
-    public string Name { get; private set; } = string.Empty;
-    public string Slug { get; private set; } = string.Empty;
-    public int DisplayOrder { get; private set; }
-    private readonly List<NewsMenu> newsMenus = new();
-    public IReadOnlyCollection<NewsMenu> NewsMenus => newsMenus.AsReadOnly();
-
-    private Menu() { }
+    public string Name { get;set; } = string.Empty;
+    public string Slug { get; set; } = string.Empty;
+    public int DisplayOrder { get; set; }
+    public IReadOnlyCollection<NewsMenu> NewsMenus { get; set; } = new List<NewsMenu>();
     public static Menu Create(string name, string slug, int displayOrder)
     {
         return new Menu
@@ -30,6 +27,7 @@ public sealed class Menu : BaseEntity
         Slug = slug;
         DisplayOrder = displayOrder;
         UpdatedAt = DateTime.UtcNow;
+        CreatedAt = CreatedAt;
     }
 
     public void SoftDelete()

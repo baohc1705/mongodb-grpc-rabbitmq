@@ -1,5 +1,6 @@
 using MediatR;
 using MenuNews.SyncService.Application.Features.Menus.Commands.CreateMenuWithNews;
+using MenuNews.SyncService.Application.Features.Menus.Commands.UpdateMenu;
 using MenuNews.SyncService.Application.Features.Menus.Queries.GetMenus;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -34,6 +35,13 @@ namespace MenuNews.SyncService.RestfulApi.Controllers
             return Ok(result);
         }
 
-       
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateMenu(Guid id, [FromBody] UpdateMenuCommand command, CancellationToken cancellationToken)
+        {
+            if (id != command.Id)
+                return BadRequest("Id not same");
+            var res = await mediator.Send(command, cancellationToken);
+            return Ok(res);
+        }
     }
 }

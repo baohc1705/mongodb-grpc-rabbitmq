@@ -57,6 +57,6 @@ public sealed class NewsUpsertedConsumer : DirectConsumerBase<NewsSyncEvent>
             cancellationToken: cancellationToken
         );
 
-        logger.LogInformation($"MenuReadModel upserted: {message.NewsId} with {message.Menus.Count} news item(s)");
+        logger.LogInformation($"NewsReadModel upserted: {message.NewsId} with {message.Menus.Count} news item(s)");
     }
 }

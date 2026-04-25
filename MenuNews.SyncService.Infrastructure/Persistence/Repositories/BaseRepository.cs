@@ -1,4 +1,4 @@
-﻿using MenuNews.SyncService.Application.Common.Interfaces;
+using MenuNews.SyncService.Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -14,6 +14,11 @@ public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
     public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
     {
         await dbSet.AddAsync(entity, cancellationToken);
+    }
+
+    public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+    {
+        await dbSet.AddRangeAsync(entities, cancellationToken);
     }
 
     public async Task<bool> ExistsAsync(Expression<Func<T, bool>> where, CancellationToken cancellationToken = default)

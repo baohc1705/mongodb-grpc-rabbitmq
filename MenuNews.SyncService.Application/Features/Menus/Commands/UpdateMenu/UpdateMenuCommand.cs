@@ -1,0 +1,12 @@
+﻿using MediatR;
+using MenuNews.SyncService.Application.DTOs;
+
+namespace MenuNews.SyncService.Application.Features.Menus.Commands.UpdateMenu;
+
+public record class UpdateMenuCommand(
+    Guid Id,
+    string Name,
+    string Slug,
+    int DisplayOrder
+) : IRequest<MenuDto>;
+
