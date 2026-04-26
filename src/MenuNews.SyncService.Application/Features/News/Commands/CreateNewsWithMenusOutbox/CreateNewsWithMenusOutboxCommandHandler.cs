@@ -50,7 +50,7 @@ public class CreateNewsWithMenusOutboxCommandHandler : IRequestHandler<CreateNew
         var newsEvent = BuildNewsSyncEvent(newsEntity, menuEntities, juctions);
         var payload = JsonSerializer.Serialize(newsEvent);
 
-        var outboxMessage = OutboxMessage.Create(NewsRountingKey.Upserted, payload);
+        var outboxMessage = OutboxMessage.Create(NewsRountingKey.Inserted, payload);
 
         await unitOfWork.OutboxMessageRepository.AddAsync(outboxMessage);
 
@@ -81,7 +81,7 @@ public class CreateNewsWithMenusOutboxCommandHandler : IRequestHandler<CreateNew
         return new NewsSyncEvent
         {
             EventType = SyncEventType.UPSERT,
-            NewsId = news.Id,
+            Id = news.Id,
             Title = news.Title,
             Slug = news.Slug,
             Summary = news.Summary,

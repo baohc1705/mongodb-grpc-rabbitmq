@@ -19,16 +19,16 @@ public sealed class NewsUpsertedConsumer : DirectConsumerBase<NewsSyncEvent>
 
     protected override string QueueName => RabbitMqConstants.NewsSyncQueue;
 
-    protected override IEnumerable<string> BindingKeys => new[] {NewsRountingKey.Upserted};
+    protected override IEnumerable<string> BindingKeys => new[] {NewsRountingKey.Inserted};
 
     protected override string ConsumerName => nameof(NewsUpsertedConsumer);
 
     protected override async Task HandleMessageAsync(NewsSyncEvent message, string rountingKey, CancellationToken cancellationToken)
     {
-        var filter = Builders<NewsReadModel>.Filter.Eq(n => n.NewsId, message.NewsId);
+        var filter = Builders<NewsReadModel>.Filter.Eq(n => n.Id, message.Id);
         var doc = new NewsReadModel
         {
-            NewsId = message.NewsId,
+            Id = message.Id,
             Title = message.Title,
             Slug = message.Slug,
             Summary = message.Summary,
@@ -57,6 +57,6 @@ public sealed class NewsUpsertedConsumer : DirectConsumerBase<NewsSyncEvent>
             cancellationToken: cancellationToken
         );
 
-        logger.LogInformation($"NewsReadModel upserted: {message.NewsId} with {message.Menus.Count} news item(s)");
+        logger.LogInformation($"NewsReadModel upserted: {message.Id} with {message.Menus.Count} news item(s)");
     }
 }

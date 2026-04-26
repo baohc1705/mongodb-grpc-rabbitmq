@@ -129,7 +129,7 @@ public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNe
         return new NewsSyncEvent
         {
             EventType = Domain.Enums.SyncEventType.UPSERT,
-            NewsId = news.Id,
+            Id = news.Id,
             Title = news.Title,
             Slug = news.Slug,
             Summary = news.Summary,
@@ -177,7 +177,7 @@ public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNe
 
         foreach (var newsEvent in newsSyncEvents)
         {
-            await publisher.PublishAsync(newsEvent, NewsRountingKey.Upserted, cancellationToken);
+            await publisher.PublishAsync(newsEvent, NewsRountingKey.Inserted, cancellationToken);
         }
     }
 }

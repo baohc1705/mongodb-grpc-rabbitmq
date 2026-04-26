@@ -6,7 +6,7 @@ public sealed class NewsReadModel
 {
     [BsonId]
     [BsonRepresentation(MongoDB.Bson.BsonType.String)]
-    public Guid NewsId { get; set; }
+    public Guid Id { get; set; }
     [BsonElement("news_title")]
     public string Title { get; set; } = string.Empty;
     [BsonElement("news_slug")]

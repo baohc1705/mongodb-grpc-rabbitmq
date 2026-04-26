@@ -59,11 +59,18 @@ public class OutboxProcessor : BackgroundService
 
     private Task PublishOutboxMessageAsync(IRabbitMqPublisher publisher, string payload, string eventType, CancellationToken ct)
     {
-        if (eventType == NewsRountingKey.Upserted)
+        if (eventType == NewsRountingKey.Inserted)
         {
             var @event = JsonSerializer.Deserialize<NewsSyncEvent>(payload)
                 ?? throw new InvalidOperationException($"Failed to deserialize payload for eventType='{eventType}'");
             return publisher.PublishAsync(@event, eventType, ct);
+        }
+
+        if (eventType == NewsRountingKey.Updated)
+        {
+            var @event = JsonSerializer.Deserialize<NewsSyncEvent>(payload)
+                ?? throw new InvalidOperationException($"Failed to deserialize payload for eventType='{eventType}'");
+            return publisher.PublishAsync( @event, eventType, ct);
         }
 
         throw new InvalidOperationException($"No handler registered for eventType='{eventType}'");

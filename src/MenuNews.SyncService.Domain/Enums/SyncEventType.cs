@@ -3,5 +3,6 @@
 public enum SyncEventType
 {
     UPSERT,
-    DELETE
+    DELETE,
+    UPDATE
 }

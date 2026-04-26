@@ -41,6 +41,7 @@ public static class DependencyInjection
 
         services.AddSingleton<MongoDbContext>();
         services.AddScoped<IMenuReadRepository, MenuReadRepository>();
+        services.AddScoped<INewsReadRepository, NewsReadRepository>();
 
         // Rabbit Mq
         services.Configure<RabbitMqSettings>(
@@ -52,6 +53,7 @@ public static class DependencyInjection
         services.AddHostedService<MenuDeletedConsumer>();
         
         services.AddHostedService<NewsUpsertedConsumer>();
+        services.AddHostedService<NewsUpdatedConsumer>();
 
         services.AddHostedService<OutboxProcessor>();
         return services;
