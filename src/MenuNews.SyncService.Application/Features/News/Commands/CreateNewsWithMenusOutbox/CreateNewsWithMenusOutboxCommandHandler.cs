@@ -1,14 +1,13 @@
 using AutoMapper;
 using MediatR;
-using MenuNews.SyncService.Application.Common.Interfaces;
 using MenuNews.SyncService.Application.Common.Exceptions;
-using MenuNews.SyncService.Application.DTOs;
-using System.Threading.Tasks;
-using MenuNews.SyncService.Domain.Entities;
-using MenuNews.SyncService.Domain.Events;
-using MenuNews.SyncService.Domain.Enums;
-using System.Text.Json;
+using MenuNews.SyncService.Application.Common.Interfaces;
 using MenuNews.SyncService.Application.Constants;
+using MenuNews.SyncService.Application.DTOs;
+using MenuNews.SyncService.Domain.Entities;
+using MenuNews.SyncService.Domain.Enums;
+using MenuNews.SyncService.Domain.Events;
+using System.Text.Json;
 
 namespace MenuNews.SyncService.Application.Features.News.Commands.CreateNewsWithMenusOutbox;
 

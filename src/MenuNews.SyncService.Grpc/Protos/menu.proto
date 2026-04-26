@@ -9,6 +9,8 @@ package menu;
 service MenuService {
 	rpc CreateMenuWithNews (CreateMenuWithNewsRequest) returns (MenuResponse);
 	rpc GetMenuWithNews (GetMenuWithNewsRequest) returns (GetMenuWithNewsResponse);
+	rpc UpdateMenu(UpdateMenuRequest) returns (MenuResponse);
+	rpc DeleteMenu(DeleteMenuRequest) returns (DeleteMenuResponse);
 }
 
 message CreateNewsItemProto {
@@ -64,4 +66,19 @@ message GetMenuWithNewsRequest {}
 
 message GetMenuWithNewsResponse {
   repeated MenuDetailResponse menus = 1;
+}
+
+message  UpdateMenuRequest {
+	string id = 1;
+	string name = 2;
+	string slug =  3;
+	int32 display_order = 4;
+}
+
+message DeleteMenuRequest {
+	string id = 1;
+}
+
+message DeleteMenuResponse {
+	string message = 1;
 }

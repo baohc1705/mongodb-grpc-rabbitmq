@@ -31,6 +31,7 @@ public class OutboxProcessor : BackgroundService
             await using var scope = serviceScopeFactory.CreateAsyncScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var publisher = scope.ServiceProvider.GetRequiredService<IRabbitMqPublisher>();
+
             var pendingMessage = await context.OutboxMessages
                 .Where(x => x.Status.Equals(OutboxStatus.PENDING))
                 .ToListAsync(stoppingToken);

@@ -2,6 +2,8 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using MediatR;
 using MenuNews.SyncService.Application.Features.Menus.Commands.CreateMenuWithNews;
+using MenuNews.SyncService.Application.Features.Menus.Commands.DeleteMenu;
+using MenuNews.SyncService.Application.Features.Menus.Commands.UpdateMenu;
 using MenuNews.SyncService.Application.Features.Menus.Queries.GetMenus;
 using MenuNews.SyncService.Grpc.Protos;
 
@@ -82,5 +84,41 @@ public class MenuGrpcService : MenuService.MenuServiceBase
         }));
 
         return response;
+    }
+
+    public override async Task<MenuResponse> UpdateMenu(UpdateMenuRequest request, ServerCallContext context)
+    {
+        var menuRequest = new UpdateMenuCommand(
+            Id: Guid.Parse(request.Id),
+            Name:  request.Name,
+            Slug: request.Slug,
+            DisplayOrder: request.DisplayOrder
+        );
+        
+        var result = await mediator.Send(menuRequest);
+
+        return new MenuResponse
+        {
+            Id = result.Id.ToString(),
+            Name = result.Name,
+            Slug = result.Slug,
+            DisplayOrder = result.DisplayOrder,
+            IsActive = result.IsActive,
+            CreatedAt = Timestamp.FromDateTime(DateTime.SpecifyKind(result.CreatedAt, DateTimeKind.Utc)),
+        };
+    }
+
+    public override async Task<DeleteMenuResponse> DeleteMenu(DeleteMenuRequest request, ServerCallContext context)
+    {
+        var idRequest = Guid.Parse(request.Id);
+        try
+        {
+            await mediator.Send(new DeleteMenuCommand(Id: idRequest));
+            return new DeleteMenuResponse { Message = $"Menu da xoa voi id = [{idRequest}]" };
+        }
+        catch
+        {
+            return new DeleteMenuResponse { Message = $"Xoa menu that bai voi id=[{idRequest}]" };
+        }
     }
 }
