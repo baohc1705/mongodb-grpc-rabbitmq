@@ -1,4 +1,7 @@
-﻿using MenuNews.SyncService.Application.Mappers;
+using FluentValidation;
+using MenuNews.SyncService.Application.Common.Behaviors;
+using MenuNews.SyncService.Application.Mappers;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MenuNews.SyncService.Application;
@@ -10,7 +13,10 @@ public static class DependencyInjection
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly);
+            cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
+
+        services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
 
         services.AddAutoMapper(cfg =>
         {

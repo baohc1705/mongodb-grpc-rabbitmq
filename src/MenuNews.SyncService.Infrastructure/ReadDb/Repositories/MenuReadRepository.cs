@@ -29,8 +29,9 @@ public sealed class MenuReadRepository : IMenuReadRepository
   
     public async Task<Menu> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var menu = await collection.Find(m => m.Id.Equals(id))
-            .FirstOrDefaultAsync(cancellationToken);
+        var menu = await collection.Find(m => m.Id.Equals(id)).FirstOrDefaultAsync(cancellationToken)
+            ?? throw new Exception("Not found");
+        
         return MapToDomain(menu);
     }
 
