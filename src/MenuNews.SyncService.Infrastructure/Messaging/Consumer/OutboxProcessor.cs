@@ -1,5 +1,4 @@
 using MenuNews.SyncService.Application.Common.Interfaces;
-using MenuNews.SyncService.Application.Constants;
 using MenuNews.SyncService.Domain.Events;
 using MenuNews.SyncService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -16,12 +15,12 @@ public class OutboxProcessor : BackgroundService
     private readonly ILogger<OutboxMessage> logger;
 
     public OutboxProcessor(
-        IServiceScopeFactory serviceScopeFactory, 
-       
+        IServiceScopeFactory serviceScopeFactory,
+
         ILogger<OutboxMessage> logger)
     {
         this.serviceScopeFactory = serviceScopeFactory;
-       
+
         this.logger = logger;
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -35,7 +34,7 @@ public class OutboxProcessor : BackgroundService
             var pendingMessage = await context.OutboxMessages
                 .Where(x => x.Status.Equals(OutboxStatus.PENDING))
                 .ToListAsync(stoppingToken);
-            
+
             foreach (var message in pendingMessage)
             {
                 try
@@ -59,21 +58,11 @@ public class OutboxProcessor : BackgroundService
 
     private Task PublishOutboxMessageAsync(IRabbitMqPublisher publisher, string payload, string eventType, CancellationToken ct)
     {
-        if (eventType == NewsRountingKey.Inserted)
-        {
-            var @event = JsonSerializer.Deserialize<NewsSyncEvent>(payload)
+        if (string.IsNullOrEmpty(eventType))
+            throw new InvalidOperationException($"EventType is null or empty");
+        var message = JsonSerializer.Deserialize<NewsSyncEvent>(payload)
                 ?? throw new InvalidOperationException($"Failed to deserialize payload for eventType='{eventType}'");
-            return publisher.PublishAsync(@event, eventType, ct);
-        }
-
-        if (eventType == NewsRountingKey.Updated)
-        {
-            var @event = JsonSerializer.Deserialize<NewsSyncEvent>(payload)
-                ?? throw new InvalidOperationException($"Failed to deserialize payload for eventType='{eventType}'");
-            return publisher.PublishAsync( @event, eventType, ct);
-        }
-
-        throw new InvalidOperationException($"No handler registered for eventType='{eventType}'");
+        return publisher.PublishAsync(message, eventType, ct);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

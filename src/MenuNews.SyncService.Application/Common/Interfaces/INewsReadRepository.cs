@@ -7,4 +7,5 @@ public interface INewsReadRepository
 {
     Task<News?> GetByIdAsync(Guid newsId, CancellationToken ct = default);
     Task<IReadOnlyList<NewsDetailDto>> GetAllAsync(CancellationToken ct = default);
+    Task<NewsDetailDto?> GetAsync(Guid newsId, CancellationToken ct = default);
 }

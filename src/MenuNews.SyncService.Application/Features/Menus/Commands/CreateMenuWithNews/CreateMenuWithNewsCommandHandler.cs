@@ -173,7 +173,7 @@ public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNe
             News = newsSyncItems
         };
 
-        await publisher.PublishAsync(menuSyncEvent, MenuRoutingKey.Upserted, cancellationToken);
+        await publisher.PublishAsync(menuSyncEvent, MenuRoutingKey.Inserted, cancellationToken);
 
         foreach (var newsEvent in newsSyncEvents)
         {

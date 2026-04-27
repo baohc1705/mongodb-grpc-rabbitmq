@@ -20,6 +20,13 @@ public class NewsReadRepository : INewsReadRepository
         return news.Select(MapToDto).ToList();
     }
 
+    public async Task<NewsDetailDto?> GetAsync(Guid newsId, CancellationToken ct = default)
+    {
+        var news = await collection.Find(n => n.Id.Equals(newsId)).FirstOrDefaultAsync()
+            ??  throw new Exception ("Not found");
+        return MapToDto(news);
+    }
+
     public async Task<News?> GetByIdAsync(Guid newsId, CancellationToken ct = default)
     {
         var news = await collection.Find(n => n.Id.Equals(newsId)).FirstOrDefaultAsync();

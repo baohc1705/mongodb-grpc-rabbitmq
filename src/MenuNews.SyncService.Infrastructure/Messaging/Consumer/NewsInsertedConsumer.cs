@@ -9,10 +9,10 @@ using MongoDB.Driver;
 
 namespace MenuNews.SyncService.Infrastructure.Messaging.Consumer;
 
-public sealed class NewsUpsertedConsumer : DirectConsumerBase<NewsSyncEvent>
+public sealed class NewsInsertedConsumer : DirectConsumerBase<NewsSyncEvent>
 {
     private readonly MongoDbContext context;
-    public NewsUpsertedConsumer(IOptions<RabbitMqSettings> settings, ILogger<NewsUpsertedConsumer> logger, MongoDbContext context) : base(settings, logger)
+    public NewsInsertedConsumer(IOptions<RabbitMqSettings> settings, ILogger<NewsInsertedConsumer> logger, MongoDbContext context) : base(settings, logger)
     {
         this.context = context;
     }
@@ -21,7 +21,7 @@ public sealed class NewsUpsertedConsumer : DirectConsumerBase<NewsSyncEvent>
 
     protected override IEnumerable<string> BindingKeys => new[] {NewsRountingKey.Inserted};
 
-    protected override string ConsumerName => nameof(NewsUpsertedConsumer);
+    protected override string ConsumerName => nameof(NewsInsertedConsumer);
 
     protected override async Task HandleMessageAsync(NewsSyncEvent message, string rountingKey, CancellationToken cancellationToken)
     {

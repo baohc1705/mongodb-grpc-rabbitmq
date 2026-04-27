@@ -5,7 +5,11 @@ option csharp_namespace = "MenuNews.SyncService.Grpc.Protos";
 package news;
 
 service NewsService {
+	rpc GetAllNews(GetAllNewsRquest) returns (GetAllNewsResponse);
+	rpc GetNewsById(GetNewsByIdRequest) returns (NewsDetaiProto);
 	rpc CreateNewsWithMenu (CreateNewsWithMenuRequest) returns (NewsProto);
+	rpc UpdateNews (UpdateNewsRequest) returns (NewsProto);
+	rpc DeleteNewsById (DeleteNewsByIdRequest) returns (DeleteNewsByIdResponse);
 }
 
 message NewsDetaiProto {
@@ -39,6 +43,19 @@ message NewsProto {
 	string created_at = 6;
 }
 
+// GetAllNews
+message GetAllNewsRquest {}
+
+message GetAllNewsResponse {
+	repeated NewsDetaiProto items = 1;
+}
+
+// GetById
+message GetNewsByIdRequest {
+	string id = 1;
+}
+
+// Create
 message CreateNewsWithMenuRequest {
 	string title = 1;
 	string slug = 2;
@@ -54,4 +71,24 @@ message MenuItemsProto {
 	string slug = 2;
 	int32 display_order = 3;
 	int32 nm_display_order = 4;
+}
+
+// UpdateNews
+message UpdateNewsRequest {
+	string id =  1;
+	string title = 2;
+	string slug = 3;
+	string summary = 4;
+	string content = 5;
+	string thumbnail = 6;
+	string published_at = 7;
+}
+
+// DeleteNewsById
+message DeleteNewsByIdRequest {
+	string id = 1;
+}
+
+message DeleteNewsByIdResponse {
+	string result = 1;
 }

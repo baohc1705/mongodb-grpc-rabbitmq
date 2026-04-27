@@ -48,12 +48,13 @@ public static class DependencyInjection
             configuration.GetSection(nameof(RabbitMqSettings)));
     
         services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
-        services.AddHostedService<MenuUpsertedConsumer>();
+        services.AddHostedService<MenuInsertedConsumer>();
         services.AddHostedService<MenuUpdatedConsumer>();
         services.AddHostedService<MenuDeletedConsumer>();
         
-        services.AddHostedService<NewsUpsertedConsumer>();
+        services.AddHostedService<NewsInsertedConsumer>();
         services.AddHostedService<NewsUpdatedConsumer>();
+        services.AddHostedService<NewsDeletedConsumer>();
 
         services.AddHostedService<OutboxProcessor>();
         return services;
