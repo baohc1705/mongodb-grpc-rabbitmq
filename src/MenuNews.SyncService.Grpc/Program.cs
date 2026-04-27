@@ -9,6 +9,7 @@ builder.Services.AddInfrastructureService(builder.Configuration);
 
 // Add services to the container.
 builder.Services.AddGrpc();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

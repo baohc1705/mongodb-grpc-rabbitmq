@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+option csharp_namespace = "MenuNews.SyncService.GrpcClient.Protos";
+
+package news;
+
+service NewsService {
+	rpc GetAllNews(GetAllNewsRquest) returns (GetAllNewsResponse);
+	rpc GetNewsById(GetNewsByIdRequest) returns (NewsDetaiProto);
+	rpc CreateNewsWithMenu (CreateNewsWithMenuRequest) returns (NewsProto);
+	rpc UpdateNews (UpdateNewsRequest) returns (NewsProto);
+	rpc DeleteNewsById (DeleteNewsByIdRequest) returns (DeleteNewsByIdResponse);
+}
+
+message NewsDetaiProto {
+	string id = 1;
+	string title = 2;
+	string slug = 3;
+	string summary = 4;
+	string thumbnail = 5;
+	string status = 6;
+	string published_at = 7;
+	int32 view_count = 8;
+	bool is_active = 9;
+	string created_at = 10;
+	repeated MenuEmbeddedProto menus = 11;
+}
+
+message MenuEmbeddedProto {
+	string id = 1;
+	string name = 2;
+	string slug = 3;
+	int32 display_order = 4;
+	int32 nm_display_order = 5;
+}
+
+message NewsProto {
+	string id = 1;
+	string title = 2;
+	string slug = 3;
+	string status = 4;
+	bool is_active = 5;
+	string created_at = 6;
+}
+
+// GetAllNews
+message GetAllNewsRquest {}
+
+message GetAllNewsResponse {
+	repeated NewsDetaiProto items = 1;
+}
+
+// GetById
+message GetNewsByIdRequest {
+	string id = 1;
+}
+
+// Create
+message CreateNewsWithMenuRequest {
+	string title = 1;
+	string slug = 2;
+	string summary = 3;
+	string content = 5;
+	string thumbnail = 6;
+	string published_at = 7;
+	repeated MenuItemsProto menus_items = 8;
+}
+
+message MenuItemsProto {
+	string name = 1;
+	string slug = 2;
+	int32 display_order = 3;
+	int32 nm_display_order = 4;
+}
+
+// UpdateNews
+message UpdateNewsRequest {
+	string id =  1;
+	string title = 2;
+	string slug = 3;
+	string summary = 4;
+	string content = 5;
+	string thumbnail = 6;
+	string published_at = 7;
+}
+
+// DeleteNewsById
+message DeleteNewsByIdRequest {
+	string id = 1;
+}
+
+message DeleteNewsByIdResponse {
+	string result = 1;
+}

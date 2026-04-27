@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MenuNews.SyncService.Infras
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MenuNews.SyncService.RestfulApi", "src\MenuNews.SyncService.RestfulApi\MenuNews.SyncService.RestfulApi.csproj", "{5BCA4787-7B0E-ED28-C96F-D83CAF1AE621}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MenuNews.SyncService.GrpcClient", "MenuNews.SyncService.GrpcClient\MenuNews.SyncService.GrpcClient.csproj", "{0580C3AB-E0A1-46B5-BB0E-062BAFCE0573}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +50,10 @@ Global
 		{5BCA4787-7B0E-ED28-C96F-D83CAF1AE621}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BCA4787-7B0E-ED28-C96F-D83CAF1AE621}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5BCA4787-7B0E-ED28-C96F-D83CAF1AE621}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0580C3AB-E0A1-46B5-BB0E-062BAFCE0573}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0580C3AB-E0A1-46B5-BB0E-062BAFCE0573}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0580C3AB-E0A1-46B5-BB0E-062BAFCE0573}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0580C3AB-E0A1-46B5-BB0E-062BAFCE0573}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,6 +64,7 @@ Global
 		{6F43C139-405D-F7B6-82FE-29E96AD32900} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{C08963DF-D718-0AD0-C9CE-8842BEDE5528} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{5BCA4787-7B0E-ED28-C96F-D83CAF1AE621} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{0580C3AB-E0A1-46B5-BB0E-062BAFCE0573} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {703EF7EA-2A27-4414-9EB4-DB80178033A7}
