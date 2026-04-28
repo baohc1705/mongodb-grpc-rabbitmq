@@ -13,39 +13,54 @@ namespace MenuNews.SyncService.Application.Features.Menus.Commands.UpdateMenu;
 public class UpdateMenuCommandHandler : IRequestHandler<UpdateMenuCommand, MenuDto>
 {
     private readonly IUnitOfWork unitOfWork;
+    private readonly IMenuRepository menuRepository;
     private readonly IMapper mapper;
     private readonly IRabbitMqPublisher publisher;
     private readonly IMenuReadRepository menuReadRepository;
 
-    public UpdateMenuCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IRabbitMqPublisher publisher, IMenuReadRepository menuReadRepository)
+    public UpdateMenuCommandHandler(
+        IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IRabbitMqPublisher publisher,
+        IMenuReadRepository menuReadRepository,
+        IMenuRepository menuRepository)
     {
         this.unitOfWork = unitOfWork;
         this.mapper = mapper;
         this.publisher = publisher;
         this.menuReadRepository = menuReadRepository;
+        this.menuRepository = menuRepository;
     }
 
     public async Task<MenuDto> Handle(UpdateMenuCommand request, CancellationToken cancellationToken)
     {
-        var menu = await menuReadRepository.GetByIdAsync(request.Id, cancellationToken)
-           ?? throw new NotFoundException(nameof(UpdateMenuCommand), request.Id);
+        try
+        {
+            var menu = await menuReadRepository.GetByIdAsync(request.Id, cancellationToken)
+                ?? throw new NotFoundException(nameof(UpdateMenuCommand), request.Id);
 
-        if (await unitOfWork.MenuRepository.ExistsAsync(m => m.Slug == request.Slug, cancellationToken))
-            throw new BusinessException($"Menu slug {request.Slug} is existed!");
+            if (await menuRepository.ExistsAsync(m => m.Slug == request.Slug, cancellationToken))
+                throw new BusinessException($"Menu slug {request.Slug} is existed!");
 
-        menu.Name = request.Name;
-        menu.Slug = request.Slug;
-        menu.DisplayOrder = request.DisplayOrder;
+            menu.Name = request.Name;
+            menu.Slug = request.Slug;
+            menu.DisplayOrder = request.DisplayOrder;
 
-        unitOfWork.MenuRepository.Update(menu);
+            menuRepository.Update(menu);
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var menuUpdatedMessage = BuidlerMessage(menu);
+            var menuUpdatedMessage = BuidlerMessage(menu);
 
-        await publisher.PublishAsync(menuUpdatedMessage, MenuRoutingKey.Updated, cancellationToken);
+            await publisher.PublishAsync(menuUpdatedMessage, MenuRoutingKey.Updated, cancellationToken);
 
-        return mapper.Map<MenuDto>(menu);
+            return mapper.Map<MenuDto>(menu);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error update menu", ex);
+        }
+
     }
 
     private MenuSyncEvent BuidlerMessage(Menu menu)

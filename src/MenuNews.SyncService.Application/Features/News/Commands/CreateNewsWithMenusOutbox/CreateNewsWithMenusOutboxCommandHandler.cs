@@ -14,49 +14,80 @@ namespace MenuNews.SyncService.Application.Features.News.Commands.CreateNewsWith
 public class CreateNewsWithMenusOutboxCommandHandler : IRequestHandler<CreateNewsWithMenusOutboxCommand, NewsDto>
 {
     private readonly IUnitOfWork unitOfWork;
+    private readonly INewsRepository newsRepository;
+    private readonly INewsMenuRepository newsMenuRepository;
+    private readonly IMenuRepository menuRepository;
+    private readonly IOutboxMessageRepository outboxMessageRepository;
     private readonly IMapper mapper;
 
-    public CreateNewsWithMenusOutboxCommandHandler(IMapper mapper, IUnitOfWork unitOfWork)
+    public CreateNewsWithMenusOutboxCommandHandler(
+        IMapper mapper,
+        IUnitOfWork unitOfWork,
+        INewsRepository newsRepository,
+        INewsMenuRepository newsMenuRepository,
+        IMenuRepository menuRepository,
+        IOutboxMessageRepository outboxMessageRepository)
     {
         this.mapper = mapper;
         this.unitOfWork = unitOfWork;
+        this.newsRepository = newsRepository;
+        this.newsMenuRepository = newsMenuRepository;
+        this.menuRepository = menuRepository;
+        this.outboxMessageRepository = outboxMessageRepository;
     }
 
     public async Task<NewsDto> Handle(CreateNewsWithMenusOutboxCommand request, CancellationToken cancellationToken)
     {
-        var menuSlugs = request.MenuItems.Select(m => m.Slug).ToList();
+        try
+        {
+            var menuSlugs = request.MenuItems.Select(m => m.Slug).ToList();
 
-        await ValidateDuplicateMenuSlugs(menuSlugs);
+            await ValidateDuplicateMenuSlugs(menuSlugs);
 
-        if (await unitOfWork.NewsRepository.ExistsAsync(n => n.Slug.Equals(request.Slug)))
-            throw new BusinessException($"News has slug [{request.Slug}] existed");
+            if (await newsRepository.ExistsAsync(n => n.Slug.Equals(request.Slug)))
+                throw new BusinessException($"News has slug [{request.Slug}] existed");
 
-        var newsEntity = Domain.Entities.News.Create(
-            request.Title,
-            request.Slug,
-            request.Summary,
-            request.Content,
-            request.Thumbnail,
-            request.PublishedAt
-        );
+            var newsEntity = Domain.Entities.News.Create(
+                request.Title,
+                request.Slug,
+                request.Summary,
+                request.Content,
+                request.Thumbnail,
+                request.PublishedAt
+            );
 
-        await unitOfWork.NewsRepository.AddAsync(newsEntity);
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        var (menuEntities, juctions) = SaveMenuAndJunctions(request.MenuItems, newsEntity);
+            await newsRepository.AddAsync(newsEntity);
 
-        await unitOfWork.MenuRepository.AddRangeAsync(menuEntities);
-        await unitOfWork.NewsMenuRepository.AddRangeAsync(juctions);
+            var (menuEntities, juctions) = SaveMenuAndJunctions(request.MenuItems, newsEntity);
 
-        var newsEvent = BuildNewsSyncEvent(newsEntity, menuEntities, juctions);
-        var payload = JsonSerializer.Serialize(newsEvent);
+            await menuRepository.AddRangeAsync(menuEntities);
+            await newsMenuRepository.AddRangeAsync(juctions);
 
-        var outboxMessage = OutboxMessage.Create(NewsRountingKey.Inserted, payload);
+            var newsEvent = BuildNewsSyncEvent(newsEntity, menuEntities, juctions);
+            var payload = JsonSerializer.Serialize(newsEvent);
 
-        await unitOfWork.OutboxMessageRepository.AddAsync(outboxMessage);
+            var outboxMessage = OutboxMessage.Create(NewsRountingKey.Inserted, payload);
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+            await outboxMessageRepository.AddAsync(outboxMessage);
 
-        return mapper.Map<NewsDto>(newsEntity);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            return mapper.Map<NewsDto>(newsEntity);
+        }
+        catch (BusinessException)
+        {
+            await unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw new Exception("Failed to create menu with news. Transaction rolled back.", ex);
+        }
+
 
     }
 
@@ -118,7 +149,7 @@ public class CreateNewsWithMenusOutboxCommandHandler : IRequestHandler<CreateNew
     {
         if (menuSlugs.Count != menuSlugs.Distinct().Count())
             throw new BusinessException($"Menu slugs duplicate in request");
-        var menuSlugExisted = await unitOfWork.MenuRepository.GetAllAsync(m => menuSlugs.Contains(m.Slug));
+        var menuSlugExisted = await menuRepository.GetAllAsync(m => menuSlugs.Contains(m.Slug));
         if (menuSlugExisted.Any())
             throw new BusinessException($"Menu has slugs existed");
     }

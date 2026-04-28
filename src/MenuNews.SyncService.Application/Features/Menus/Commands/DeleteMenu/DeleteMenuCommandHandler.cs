@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using MenuNews.SyncService.Application.Common.Interfaces;
 using MenuNews.SyncService.Application.Common.Exceptions;
+using MenuNews.SyncService.Application.Common.Interfaces;
 using MenuNews.SyncService.Application.Constants;
 using MenuNews.SyncService.Domain.Entities;
 using MenuNews.SyncService.Domain.Events;
@@ -10,28 +10,48 @@ namespace MenuNews.SyncService.Application.Features.Menus.Commands.DeleteMenu;
 public sealed class DeleteMenuCommandHandler : IRequestHandler<DeleteMenuCommand>
 {
     private readonly IUnitOfWork unitOfWork;
+    private readonly IMenuRepository menuRepository;
+    private readonly INewsMenuRepository newsMenuRepository;
     private readonly IRabbitMqPublisher publisher;
 
-    public DeleteMenuCommandHandler(IUnitOfWork unitOfWork, IRabbitMqPublisher publisher)
+    public DeleteMenuCommandHandler(
+        IUnitOfWork unitOfWork,
+        IRabbitMqPublisher publisher,
+        IMenuRepository menuRepository,
+        INewsMenuRepository newsMenuRepository)
     {
         this.unitOfWork = unitOfWork;
         this.publisher = publisher;
+        this.menuRepository = menuRepository;
+        this.newsMenuRepository = newsMenuRepository;
     }
 
     public async Task Handle(DeleteMenuCommand request, CancellationToken cancellationToken)
     {
-        var menu = await unitOfWork.MenuRepository.GetAsync(m => m.Id.Equals(request.Id))
+
+        var menu = await menuRepository.GetAsync(m => m.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(DeleteMenuCommand), request.Id);
 
-        var junctionMenus = await unitOfWork.NewsMenuRepository.GetAllAsync(nm => nm.MenuId.Equals(menu.Id));
+        var junctions = await newsMenuRepository.GetAllAsync(nm => nm.MenuId == menu.Id, cancellationToken);
 
-        unitOfWork.MenuRepository.RemoveRange(junctionMenus.Select(nm => new Domain.Entities.Menu { Id = nm.MenuId }).ToList());
+        await unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        await unitOfWork.SaveChangesAsync();
+        try
+        {
+            newsMenuRepository.RemoveRange(junctions);
+            menuRepository.Remove(menu);
 
-        var menuMessage = BuildingMenuMessage(menu);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        await publisher.PublishAsync(menuMessage, MenuRoutingKey.Deleted, cancellationToken);
+
+            await publisher.PublishAsync(BuildingMenuMessage(menu), MenuRoutingKey.Deleted, cancellationToken);
+        }
+        catch (Exception)
+        {
+            await unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     private MenuSyncEvent BuildingMenuMessage(Menu menu) => new MenuSyncEvent { MenuId = menu.Id };

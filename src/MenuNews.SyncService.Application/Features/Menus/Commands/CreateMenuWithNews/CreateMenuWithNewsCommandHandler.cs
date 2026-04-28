@@ -12,37 +12,65 @@ namespace MenuNews.SyncService.Application.Features.Menus.Commands.CreateMenuWit
 public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNewsCommand, MenuDto>
 {
     private readonly IUnitOfWork unitOfWork;
+    private readonly IMenuRepository menuRepository;
+    private readonly INewsMenuRepository newsMenuRepository;
+    private readonly INewsRepository newsRepository;
     private readonly IRabbitMqPublisher publisher;
     private readonly IMapper mapper;
 
-    public CreateMenuWithNewsCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IRabbitMqPublisher publisher)
+    public CreateMenuWithNewsCommandHandler(
+        IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IRabbitMqPublisher publisher,
+        IMenuRepository menuRepository,
+        INewsMenuRepository newsMenuRepository,
+        INewsRepository newsRepository)
     {
         this.unitOfWork = unitOfWork;
         this.mapper = mapper;
         this.publisher = publisher;
+        this.menuRepository = menuRepository;
+        this.newsMenuRepository = newsMenuRepository;
+        this.newsRepository = newsRepository;
     }
 
     public async Task<MenuDto> Handle(CreateMenuWithNewsCommand request, CancellationToken cancellationToken)
     {
+        try
+        {
+            var requestSlugs = request.NewsItems.Select(x => x.Slug).ToList();
+            ValidateRequestSlugs(requestSlugs);
+            await ValidateNewsSlugsAsync(requestSlugs, cancellationToken);
 
-        var requestSlugs = request.NewsItems.Select(x => x.Slug).ToList();
-        ValidateRequestSlugs(requestSlugs);
- 
-        await ValidateNewsSlugsAsync(requestSlugs, cancellationToken);
+            await unitOfWork.BeginTransactionAsync(cancellationToken);
 
-        var menu = await CreateAndValidateMenuAsync(request.Name, request.Slug, request.DisplayOrder, cancellationToken);
 
-        var (newsEntities, junctions, newsSyncItems, newsSyncEvents) = ProcessNewsItems(request.NewsItems, menu);
+            var menu = await CreateAndValidateMenuAsync(request.Name, request.Slug, request.DisplayOrder, cancellationToken);
 
-        await unitOfWork.NewsRepository.AddRangeAsync(newsEntities, cancellationToken);
-        await unitOfWork.NewsMenuRepository.AddRangeAsync(junctions, cancellationToken);
+            var (newsEntities, junctions, newsSyncItems, newsSyncEvents) = ProcessNewsItems(request.NewsItems, menu);
 
-        
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+            await newsRepository.AddRangeAsync(newsEntities, cancellationToken);
+            await newsMenuRepository.AddRangeAsync(junctions, cancellationToken);
 
-        await PublishSyncEventsAsync(menu, newsSyncItems, newsSyncEvents, cancellationToken);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return mapper.Map<MenuDto>(menu);
+            await unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            await PublishSyncEventsAsync(menu, newsSyncItems, newsSyncEvents, cancellationToken);
+
+            return mapper.Map<MenuDto>(menu);
+        }
+        catch (BusinessException)
+        {
+
+            await unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw new Exception("Failed to create menu with news. Transaction rolled back.", ex);
+        }
     }
 
     private void ValidateRequestSlugs(List<string> requestSlugs)
@@ -55,7 +83,7 @@ public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNe
 
     private async Task ValidateNewsSlugsAsync(List<string> requestSlugs, CancellationToken cancellationToken)
     {
-        var existingNews = await unitOfWork.NewsRepository.GetAllAsync(n => requestSlugs.Contains(n.Slug), cancellationToken);
+        var existingNews = await newsRepository.GetAllAsync(n => requestSlugs.Contains(n.Slug), cancellationToken);
         if (existingNews.Any())
         {
             var duplicateSlugs = string.Join(", ", existingNews.Select(n => n.Slug));
@@ -65,13 +93,13 @@ public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNe
 
     private async Task<Domain.Entities.Menu> CreateAndValidateMenuAsync(string name, string slug, int displayOrder, CancellationToken cancellationToken)
     {
-        if (await unitOfWork.MenuRepository.ExistsAsync(m => m.Slug.Equals(slug), cancellationToken))
+        if (await menuRepository.ExistsAsync(m => m.Slug.Equals(slug), cancellationToken))
         {
             throw new BusinessException($"Menu with slug {slug} already exists.");
         }
 
         var menu = Domain.Entities.Menu.Create(name, slug, displayOrder);
-        await unitOfWork.MenuRepository.AddAsync(menu, cancellationToken);
+        await menuRepository.AddAsync(menu, cancellationToken);
         return menu;
     }
 
@@ -99,7 +127,7 @@ public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNe
 
             newsEntities.Add(news);
             junctions.Add(junction);
-            
+
             newsSyncItems.Add(BuildNewsSyncItem(news, item.DisplayOrder));
             newsSyncEvents.Add(BuildNewsSyncEvent(news, menu, item.DisplayOrder));
         }
@@ -156,9 +184,9 @@ public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNe
     }
 
     private async Task PublishSyncEventsAsync(
-        Domain.Entities.Menu menu, 
-        List<NewsSyncItem> newsSyncItems, 
-        List<NewsSyncEvent> newsSyncEvents, 
+        Domain.Entities.Menu menu,
+        List<NewsSyncItem> newsSyncItems,
+        List<NewsSyncEvent> newsSyncEvents,
         CancellationToken cancellationToken)
     {
         var menuSyncEvent = new MenuSyncEvent

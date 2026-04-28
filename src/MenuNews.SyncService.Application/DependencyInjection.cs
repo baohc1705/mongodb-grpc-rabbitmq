@@ -1,7 +1,6 @@
 using FluentValidation;
 using MenuNews.SyncService.Application.Common.Behaviors;
 using MenuNews.SyncService.Application.Mappers;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MenuNews.SyncService.Application;

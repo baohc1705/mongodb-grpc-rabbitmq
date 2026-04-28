@@ -12,38 +12,58 @@ public class UpdateNewsCommandHandler : IRequestHandler<UpdateNewsCommand, NewsD
 {
     private readonly IUnitOfWork unitOfWork;
     private readonly INewsReadRepository newsReadRepository;
+    private readonly INewsRepository newsRepository;
+    private readonly INewsMenuRepository newsMenuRepository;
+    private readonly IOutboxMessageRepository outboxMessageRepository;
     private readonly IMapper mapper;
 
-    public UpdateNewsCommandHandler(IUnitOfWork unitOfWork, INewsReadRepository newsReadRepository, IMapper mapper)
+    public UpdateNewsCommandHandler(
+        IUnitOfWork unitOfWork,
+        INewsReadRepository newsReadRepository,
+        IMapper mapper,
+        INewsRepository newsRepository,
+        INewsMenuRepository newsMenuRepository,
+        IOutboxMessageRepository outboxMessageRepository)
     {
         this.unitOfWork = unitOfWork;
         this.newsReadRepository = newsReadRepository;
         this.mapper = mapper;
+        this.newsRepository = newsRepository;
+        this.newsMenuRepository = newsMenuRepository;
+        this.outboxMessageRepository = outboxMessageRepository;
     }
 
     public async Task<NewsDto> Handle(UpdateNewsCommand request, CancellationToken cancellationToken)
     {
         var news = await newsReadRepository.GetByIdAsync(request.Id)
              ?? throw new Exception("Not found");
-        if (await unitOfWork.NewsRepository.ExistsAsync(n=>n.Slug.Equals(request.Slug)))
+        if (await newsRepository.ExistsAsync(n=>n.Slug.Equals(request.Slug)))
         {
             throw new Exception("Slug existed");
         }
 
-        var newsEntityUpdate = UpdateNews(request, news);
+        var newsEntityUpdate = BuilderNewsEntity(request, news);
 
-        unitOfWork.NewsRepository.Update(newsEntityUpdate);
+        await unitOfWork.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            newsRepository.Update(newsEntityUpdate);
 
-        var newsMessage = BuildMessage(newsEntityUpdate);
+            var newsMessage = BuildMessage(newsEntityUpdate);
 
-        var newsPayload= JsonSerializer.Serialize(newsEntityUpdate);
-        var outboxMessage = OutboxMessage.Create(NewsRountingKey.Updated, newsPayload);
-        await unitOfWork.OutboxMessageRepository.AddAsync(outboxMessage, cancellationToken);
-        
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+            var newsPayload = JsonSerializer.Serialize(newsEntityUpdate);
+            var outboxMessage = OutboxMessage.Create(NewsRountingKey.Updated, newsPayload);
+            await outboxMessageRepository.AddAsync(outboxMessage, cancellationToken);
 
-        return mapper.Map<NewsDto>(newsEntityUpdate);
-
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+            await unitOfWork.CommitTransactionAsync(cancellationToken);
+            return mapper.Map<NewsDto>(newsEntityUpdate);
+        }
+        catch (Exception)
+        {
+            await unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
 
@@ -61,7 +81,7 @@ public class UpdateNewsCommandHandler : IRequestHandler<UpdateNewsCommand, NewsD
         };
     }
 
-    private Domain.Entities.News UpdateNews(UpdateNewsCommand request, Domain.Entities.News news)
+    private Domain.Entities.News BuilderNewsEntity(UpdateNewsCommand request, Domain.Entities.News news)
     {
 
         news.Title = request.Title;
