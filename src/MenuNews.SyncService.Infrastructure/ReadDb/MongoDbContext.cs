@@ -1,4 +1,4 @@
-﻿using MenuNews.SyncService.Infrastructure.ReadDb.ReadModels;
+using MenuNews.SyncService.Application.Common.Models.ReadModels;
 using MenuNews.SyncService.Infrastructure.ReadDb.Settings;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;

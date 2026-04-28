@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using MediatR;
 using MenuNews.SyncService.Application.Common.Interfaces;
 using MenuNews.SyncService.Application.DTOs;

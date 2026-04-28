@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using MediatR;
 using MenuNews.SyncService.Application.Common.Exceptions;
 using MenuNews.SyncService.Application.Common.Interfaces;
@@ -36,8 +36,10 @@ public class UpdateMenuCommandHandler : IRequestHandler<UpdateMenuCommand, MenuD
     {
         try
         {
-            var menu = await menuReadRepository.GetByIdAsync(request.Id, cancellationToken)
+            var menuRead = await menuReadRepository.GetAsync(m => m.Id == request.Id, cancellationToken)
                 ?? throw new NotFoundException(nameof(UpdateMenuCommand), request.Id);
+
+            var menu = mapper.Map<Menu>(menuRead);
 
             if (await menuRepository.ExistsAsync(m => m.Slug == request.Slug, cancellationToken))
                 throw new BusinessException($"Menu slug {request.Slug} is existed!");

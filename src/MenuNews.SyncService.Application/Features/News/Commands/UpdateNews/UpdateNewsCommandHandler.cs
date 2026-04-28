@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using MediatR;
 using MenuNews.SyncService.Application.Common.Interfaces;
 using MenuNews.SyncService.Application.Constants;
@@ -35,8 +35,10 @@ public class UpdateNewsCommandHandler : IRequestHandler<UpdateNewsCommand, NewsD
 
     public async Task<NewsDto> Handle(UpdateNewsCommand request, CancellationToken cancellationToken)
     {
-        var news = await newsReadRepository.GetByIdAsync(request.Id)
+        var newsRead = await newsReadRepository.GetAsync(n => n.Id == request.Id, cancellationToken)
              ?? throw new Exception("Not found");
+        
+        var news = mapper.Map<Domain.Entities.News>(newsRead);
         if (await newsRepository.ExistsAsync(n=>n.Slug.Equals(request.Slug)))
         {
             throw new Exception("Slug existed");

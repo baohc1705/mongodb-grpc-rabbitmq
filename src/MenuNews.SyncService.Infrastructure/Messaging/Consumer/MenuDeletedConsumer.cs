@@ -1,8 +1,8 @@
-﻿using MenuNews.SyncService.Application.Constants;
+using MenuNews.SyncService.Application.Constants;
 using MenuNews.SyncService.Domain.Events;
 using MenuNews.SyncService.Infrastructure.Messaging.Settings;
 using MenuNews.SyncService.Infrastructure.ReadDb;
-using MenuNews.SyncService.Infrastructure.ReadDb.ReadModels;
+using MenuNews.SyncService.Application.Common.Models.ReadModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
