@@ -16,12 +16,15 @@ public sealed class UnitOfWork : IUnitOfWork
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
+        if (transaction is not null)
+            throw new Exception("Transaction actived");
         transaction = await context.Database.BeginTransactionAsync(cancellationToken);
     }
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (transaction is null) throw new Exception("No active transaction");
+        if (transaction is null) 
+            throw new Exception("No active transaction");
         await transaction.CommitAsync(cancellationToken);
         await transaction.DisposeAsync();
         transaction = null;

@@ -60,12 +60,6 @@ public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNe
 
             return mapper.Map<MenuDto>(menu);
         }
-        catch (BusinessException)
-        {
-
-            await unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
-        }
         catch (Exception ex)
         {
             await unitOfWork.RollbackTransactionAsync(cancellationToken);

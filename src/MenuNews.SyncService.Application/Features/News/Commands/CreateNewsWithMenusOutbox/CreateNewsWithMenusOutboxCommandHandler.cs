@@ -60,7 +60,7 @@ public class CreateNewsWithMenusOutboxCommandHandler : IRequestHandler<CreateNew
 
             await newsRepository.AddAsync(newsEntity);
 
-            var (menuEntities, juctions) = SaveMenuAndJunctions(request.MenuItems, newsEntity);
+            var (menuEntities, juctions) = BuildMenuAndJunction(request.MenuItems, newsEntity);
 
             await menuRepository.AddRangeAsync(menuEntities);
             await newsMenuRepository.AddRangeAsync(juctions);
@@ -77,18 +77,11 @@ public class CreateNewsWithMenusOutboxCommandHandler : IRequestHandler<CreateNew
 
             return mapper.Map<NewsDto>(newsEntity);
         }
-        catch (BusinessException)
-        {
-            await unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
-        }
         catch (Exception ex)
         {
             await unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw new Exception("Failed to create menu with news. Transaction rolled back.", ex);
         }
-
-
     }
 
     private NewsSyncEvent BuildNewsSyncEvent(
@@ -128,7 +121,7 @@ public class CreateNewsWithMenusOutboxCommandHandler : IRequestHandler<CreateNew
         };
     }
 
-    private (List<Menu>, List<NewsMenu>) SaveMenuAndJunctions(List<MenusItemRequest> menuItems, Domain.Entities.News newsEntity)
+    private (List<Menu>, List<NewsMenu>) BuildMenuAndJunction(List<MenusItemRequest> menuItems, Domain.Entities.News newsEntity)
     {
         var menuEntities = new List<Menu>();
         var junctions = new List<NewsMenu>();
