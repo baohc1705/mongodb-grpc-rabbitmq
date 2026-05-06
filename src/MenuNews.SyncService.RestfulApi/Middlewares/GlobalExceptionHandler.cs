@@ -6,11 +6,11 @@ namespace MenuNews.SyncService.RestfulApi.Middlewares;
 
 public class GlobalExceptionHandler : IExceptionHandler
 {
-    private readonly ILogger<GlobalExceptionHandler> _logger;
+    private readonly ILogger<GlobalExceptionHandler> logger;
 
     public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
     {
-        _logger = logger;
+        this.logger = logger;
     }
 
     public async ValueTask<bool> TryHandleAsync(
@@ -18,7 +18,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         Exception exception,
         CancellationToken cancellationToken)
     {
-        _logger.LogError(exception, "An unhandled exception occurred: {Message}", exception.Message);
+        logger.LogError(exception, "An unhandled exception occurred: {Message}", exception.Message);
 
         var (statusCode, title) = exception switch
         {
