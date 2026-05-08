@@ -1,4 +1,4 @@
-using MenuNews.SyncService.Application.Common.Interfaces;
+using MenuNews.SyncService.Application.Common.Interfaces.Messaging;
 using MenuNews.SyncService.Infrastructure.Messaging.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

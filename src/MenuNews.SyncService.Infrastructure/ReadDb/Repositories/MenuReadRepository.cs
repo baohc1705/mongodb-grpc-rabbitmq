@@ -1,4 +1,4 @@
-using MenuNews.SyncService.Application.Common.Interfaces;
+using MenuNews.SyncService.Application.Common.Interfaces.MongoRepository;
 using MenuNews.SyncService.Application.Common.Models.ReadModels;
 using MongoDB.Driver;
 

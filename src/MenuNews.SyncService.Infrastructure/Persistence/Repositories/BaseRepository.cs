@@ -1,13 +1,16 @@
 using MenuNews.SyncService.Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
+
 using System.Linq.Expressions;
 
 namespace MenuNews.SyncService.Infrastructure.Persistence.Repositories;
 
-public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
+public abstract class BaseRepository<T, TDbContext> : IBaseRepository<T> 
+    where T : class 
+    where TDbContext : DbContext
 {
     protected readonly DbSet<T> dbSet;
-    protected BaseRepository(AppDbContext context)
+    protected BaseRepository(TDbContext context)
     {
         dbSet = context.Set<T>();
     }
@@ -39,6 +42,17 @@ public abstract class BaseRepository<T> : IBaseRepository<T> where T : class
             .Where(expression)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<T>> GetAllAsync(params Expression<Func<T, object>>[] includes)
+    {
+        IQueryable<T> query = dbSet.AsNoTracking();
+        foreach(var include in includes)
+        {
+           query = query.Include(include);
+        }
+        return await query.ToListAsync();
+        
     }
 
     public Task<T?> GetAsync(Expression<Func<T, bool>> expression, CancellationToken cancellationToken = default)

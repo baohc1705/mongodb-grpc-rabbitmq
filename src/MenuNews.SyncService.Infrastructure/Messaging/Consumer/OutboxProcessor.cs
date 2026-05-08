@@ -1,6 +1,5 @@
-using MenuNews.SyncService.Application.Common.Interfaces;
+using MenuNews.SyncService.Application.Common.Interfaces.Messaging;
 using MenuNews.SyncService.Domain.Events;
-using MenuNews.SyncService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,29 +8,36 @@ using System.Text.Json;
 
 namespace MenuNews.SyncService.Infrastructure.Messaging.Consumer;
 
-public class OutboxProcessor : BackgroundService
+public abstract class OutboxProcessor<TOutbox, TDbContext> : BackgroundService
+    where TOutbox : OutboxMessage
+    where TDbContext : DbContext
 {
     private readonly IServiceScopeFactory serviceScopeFactory;
-    private readonly ILogger<OutboxMessage> logger;
+    private readonly ILogger<OutboxProcessor<TOutbox, TDbContext>> logger;
+   
 
     public OutboxProcessor(
         IServiceScopeFactory serviceScopeFactory,
 
-        ILogger<OutboxMessage> logger)
+        ILogger<OutboxProcessor<TOutbox, TDbContext>> logger)
     {
         this.serviceScopeFactory = serviceScopeFactory;
 
         this.logger = logger;
+
+       
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
             await using var scope = serviceScopeFactory.CreateAsyncScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var context = scope.ServiceProvider.GetRequiredService<TDbContext>();
             var publisher = scope.ServiceProvider.GetRequiredService<IRabbitMqPublisher>();
 
-            var pendingMessage = await context.OutboxMessages
+            var dbSet = context.Set<TOutbox>();
+
+            var pendingMessage = await dbSet
                 .Where(x => x.Status.Equals(OutboxStatus.PENDING))
                 .ToListAsync(stoppingToken);
 
@@ -60,9 +66,17 @@ public class OutboxProcessor : BackgroundService
     {
         if (string.IsNullOrEmpty(eventType))
             throw new InvalidOperationException($"EventType is null or empty");
-        var message = JsonSerializer.Deserialize<NewsSyncEvent>(payload)
+
+        if (eventType.StartsWith("menu."))
+        {
+            var message = JsonSerializer.Deserialize<MenuSyncEvent>(payload)
+                    ?? throw new InvalidOperationException($"Failed to deserialize payload for eventType='{eventType}'");
+            return publisher.PublishAsync(message, eventType, ct);
+        }
+
+        var newsMessage = JsonSerializer.Deserialize<NewsSyncEvent>(payload)
                 ?? throw new InvalidOperationException($"Failed to deserialize payload for eventType='{eventType}'");
-        return publisher.PublishAsync(message, eventType, ct);
+        return publisher.PublishAsync(newsMessage, eventType, ct);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

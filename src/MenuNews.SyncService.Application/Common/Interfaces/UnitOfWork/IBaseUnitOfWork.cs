@@ -1,6 +1,6 @@
-﻿namespace MenuNews.SyncService.Application.Common.Interfaces;
+﻿namespace MenuNews.SyncService.Application.Common.Interfaces.UnitOfWork;
 
-public interface IUnitOfWork : IAsyncDisposable
+public interface IBaseUnitOfWork : IAsyncDisposable
 {
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);

@@ -1,6 +1,6 @@
 ﻿namespace MenuNews.SyncService.Domain.Events;
 
-public sealed class OutboxStatus
+public  class OutboxStatus
 {
     public const string PENDING = "PENDING";
     public const string PROCESSED = "PROCESSED";
@@ -8,7 +8,7 @@ public sealed class OutboxStatus
 }
 
 
-public sealed class OutboxMessage
+public class OutboxMessage
 {
     public Guid Id { get; set; }
     public string EventType { get; set; } = string.Empty;

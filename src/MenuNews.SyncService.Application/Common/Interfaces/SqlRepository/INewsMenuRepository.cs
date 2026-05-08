@@ -1,6 +1,6 @@
 ﻿using MenuNews.SyncService.Domain.Entities;
 
-namespace MenuNews.SyncService.Application.Common.Interfaces;
+namespace MenuNews.SyncService.Application.Common.Interfaces.SqlRepository;
 
 public interface INewsMenuRepository : IBaseRepository<NewsMenu>
 {

@@ -1,4 +1,4 @@
-namespace MenuNews.SyncService.Application.Common.Interfaces;
+namespace MenuNews.SyncService.Application.Common.Interfaces.Messaging;
 
 public interface IRabbitMqPublisher
 {

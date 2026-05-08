@@ -25,7 +25,7 @@ public sealed class MenuUpdatedConsumer : DirectConsumerBase<MenuSyncEvent>
 
     protected override async Task HandleMessageAsync(MenuSyncEvent message, string rountingKey, CancellationToken cancellationToken)
     {
-        var filter = Builders<MenuReadModel>.Filter.Eq(m => m.Id, message.MenuId);
+        var filter = Builders<MenuReadModel>.Filter.Eq(m => m.Id, message.Id);
 
         var updateDefinition = Builders<MenuReadModel>.Update
             .Set(m => m.Name, message.Name)
@@ -40,6 +40,6 @@ public sealed class MenuUpdatedConsumer : DirectConsumerBase<MenuSyncEvent>
             cancellationToken
         );
 
-        logger.LogInformation($"{nameof(MenuUpdatedConsumer)} updated message = [{message.MenuId}]");
+        logger.LogInformation($"{nameof(MenuUpdatedConsumer)} updated message = [{message.Id}]");
     }
 }

@@ -4,8 +4,8 @@ namespace MenuNews.SyncService.Domain.Events;
 
 public sealed class MenuSyncEvent
 {
-    public SyncEventType EventType { get; init; }
-    public Guid MenuId { get; init; }
+    public string EventType { get; init; } = string.Empty;
+    public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public string Slug { get; init; } = string.Empty;
     public int DisplayOrder { get; init; }

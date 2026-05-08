@@ -2,7 +2,7 @@ using System.Linq.Expressions;
 
 namespace MenuNews.SyncService.Application.Common.Interfaces;
 
-public interface IBaseRepository<T> where T : class
+public interface IBaseRepository<T> where T : class 
 {
     Task<T?> GetAsync(Expression<Func<T , bool>> expression, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<T>> GetAllAsync(CancellationToken cancellationToken = default);
@@ -14,4 +14,7 @@ public interface IBaseRepository<T> where T : class
     void RemoveRange(IEnumerable<T> entities);
 
     Task<bool> ExistsAsync(Expression<Func<T, bool>> where, CancellationToken cancellationToken = default);
+
+    // Get with include 
+    //Task<IReadOnlyList<T>> GetAllAsync(params Expression<Func<IQueryable<T>, IIncludableQueryable<T, object>>>[] includes);
 }

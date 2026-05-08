@@ -1,5 +1,7 @@
-﻿using MenuNews.SyncService.Application.Common.Interfaces;
-using MenuNews.SyncService.Infrastructure.Messaging;
+﻿using MenuNews.SyncService.Application.Common.Interfaces.Messaging;
+using MenuNews.SyncService.Application.Common.Interfaces.MongoRepository;
+using MenuNews.SyncService.Application.Common.Interfaces.SqlRepository;
+using MenuNews.SyncService.Application.Common.Interfaces.UnitOfWork;
 using MenuNews.SyncService.Infrastructure.Messaging.Consumer;
 using MenuNews.SyncService.Infrastructure.Messaging.Publisher;
 using MenuNews.SyncService.Infrastructure.Messaging.Settings;
@@ -26,7 +28,7 @@ public static class DependencyInjection
             opt.UseSqlServer(configuration.GetConnectionString(nameof(AppDbContext)));
         });
 
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<ISqlUnitOfWork, SqlUnitOfWork>();
         services.AddScoped<IMenuRepository, MenuRepository>();
         services.AddScoped<INewsRepository, NewsRepository>();
         services.AddScoped<INewsMenuRepository, NewsMenuRepository>();
@@ -56,7 +58,7 @@ public static class DependencyInjection
         services.AddHostedService<NewsUpdatedConsumer>();
         services.AddHostedService<NewsDeletedConsumer>();
 
-        services.AddHostedService<OutboxProcessor>();
+        services.AddHostedService<SqlOutboxProcessor>();
         return services;
     }
 }

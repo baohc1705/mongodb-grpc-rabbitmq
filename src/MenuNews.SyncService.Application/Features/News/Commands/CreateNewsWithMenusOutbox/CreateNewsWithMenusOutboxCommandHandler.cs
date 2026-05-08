@@ -1,7 +1,8 @@
 using AutoMapper;
 using MediatR;
 using MenuNews.SyncService.Application.Common.Exceptions;
-using MenuNews.SyncService.Application.Common.Interfaces;
+using MenuNews.SyncService.Application.Common.Interfaces.SqlRepository;
+using MenuNews.SyncService.Application.Common.Interfaces.UnitOfWork;
 using MenuNews.SyncService.Application.Constants;
 using MenuNews.SyncService.Application.DTOs;
 using MenuNews.SyncService.Domain.Entities;
@@ -13,7 +14,7 @@ namespace MenuNews.SyncService.Application.Features.News.Commands.CreateNewsWith
 
 public class CreateNewsWithMenusOutboxCommandHandler : IRequestHandler<CreateNewsWithMenusOutboxCommand, NewsDto>
 {
-    private readonly IUnitOfWork unitOfWork;
+    private readonly ISqlUnitOfWork unitOfWork;
     private readonly INewsRepository newsRepository;
     private readonly INewsMenuRepository newsMenuRepository;
     private readonly IMenuRepository menuRepository;
@@ -22,7 +23,7 @@ public class CreateNewsWithMenusOutboxCommandHandler : IRequestHandler<CreateNew
 
     public CreateNewsWithMenusOutboxCommandHandler(
         IMapper mapper,
-        IUnitOfWork unitOfWork,
+        ISqlUnitOfWork unitOfWork,
         INewsRepository newsRepository,
         INewsMenuRepository newsMenuRepository,
         IMenuRepository menuRepository,

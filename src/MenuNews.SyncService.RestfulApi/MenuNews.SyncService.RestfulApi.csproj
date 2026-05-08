@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\MenuNews.SyncService.Infrastructure.Postgres\MenuNews.SyncService.Infrastructure.Postgres.csproj" />
     <ProjectReference Include="..\MenuNews.SyncService.Application\MenuNews.SyncService.Application.csproj" />
     <ProjectReference Include="..\MenuNews.SyncService.Infrastructure\MenuNews.SyncService.Infrastructure.csproj" />
   </ItemGroup>

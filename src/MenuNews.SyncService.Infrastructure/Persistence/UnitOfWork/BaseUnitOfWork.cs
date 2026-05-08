@@ -1,15 +1,16 @@
-﻿using MenuNews.SyncService.Application.Common.Interfaces;
+﻿using MenuNews.SyncService.Application.Common.Interfaces.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace MenuNews.SyncService.Infrastructure.Persistence.UnitOfWork;
 
-public sealed class UnitOfWork : IUnitOfWork
+public abstract class BaseUnitOfWork<TDbContext> : IBaseUnitOfWork where TDbContext : DbContext
 {
     private IDbContextTransaction? transaction;
 
-    private readonly AppDbContext context;
+    private readonly TDbContext context;
 
-    public UnitOfWork(AppDbContext context)
+    public BaseUnitOfWork(TDbContext context)
     {
         this.context = context;
     }
