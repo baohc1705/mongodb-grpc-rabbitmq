@@ -1,7 +1,7 @@
 using AutoMapper;
 using MediatR;
 using MenuNews.SyncService.Application.Common.Exceptions;
-using MenuNews.SyncService.Application.Common.Interfaces;
+using MenuNews.SyncService.Application.Common.Interfaces.MongoRepository;
 using MenuNews.SyncService.Application.DTOs;
 
 namespace MenuNews.SyncService.Application.Features.News.Queries.GetNewsById;

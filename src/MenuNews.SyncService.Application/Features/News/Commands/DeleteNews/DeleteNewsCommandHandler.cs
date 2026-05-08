@@ -1,5 +1,6 @@
 ﻿using MediatR;
-using MenuNews.SyncService.Application.Common.Interfaces;
+using MenuNews.SyncService.Application.Common.Interfaces.SqlRepository;
+using MenuNews.SyncService.Application.Common.Interfaces.UnitOfWork;
 using MenuNews.SyncService.Application.Constants;
 using MenuNews.SyncService.Domain.Events;
 using System.Text.Json;
@@ -8,13 +9,13 @@ namespace MenuNews.SyncService.Application.Features.News.Commands.DeleteNews;
 
 public class DeleteNewsCommandHandler : IRequestHandler<DeleteNewsCommand>
 {
-    private readonly IUnitOfWork unitOfWork;
+    private readonly ISqlUnitOfWork unitOfWork;
     private readonly INewsRepository newsRepository;
     private readonly INewsMenuRepository newsMenuRepository;
     private readonly IOutboxMessageRepository outboxMessageRepository;
 
     public DeleteNewsCommandHandler(
-        IUnitOfWork unitOfWork, 
+        ISqlUnitOfWork unitOfWork, 
         INewsRepository newsRepository, 
         INewsMenuRepository newsMenuRepository, 
         IOutboxMessageRepository outboxMessageRepository)

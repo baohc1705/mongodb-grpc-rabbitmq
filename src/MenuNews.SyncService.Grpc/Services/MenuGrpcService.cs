@@ -5,6 +5,7 @@ using MenuNews.SyncService.Application.Features.Menus.Commands.CreateMenuWithNew
 using MenuNews.SyncService.Application.Features.Menus.Commands.DeleteMenu;
 using MenuNews.SyncService.Application.Features.Menus.Commands.UpdateMenu;
 using MenuNews.SyncService.Application.Features.Menus.Queries.GetMenus;
+using MenuNews.SyncService.Application.Features.Menus.Queries.GetMenusPostgres;
 using MenuNews.SyncService.Grpc.Protos;
 
 namespace MenuNews.SyncService.Grpc.Services;
@@ -90,11 +91,11 @@ public class MenuGrpcService : MenuService.MenuServiceBase
     {
         var menuRequest = new UpdateMenuCommand(
             Id: Guid.Parse(request.Id),
-            Name:  request.Name,
+            Name: request.Name,
             Slug: request.Slug,
             DisplayOrder: request.DisplayOrder
         );
-        
+
         var result = await mediator.Send(menuRequest);
 
         return new MenuResponse
@@ -120,5 +121,32 @@ public class MenuGrpcService : MenuService.MenuServiceBase
         {
             return new DeleteMenuResponse { Message = $"Xoa menu that bai voi id=[{idRequest}]" };
         }
+    }
+
+    // Postgres
+
+    public override async Task<GetMenuByPostgresResponse> GetMenusByPostgres(GetMenuByPostgresRequest request, ServerCallContext context)
+    {
+        try
+        {
+            var menus = await mediator.Send(new GetMenusPostgresQuery());
+            var response = new GetMenuByPostgresResponse();
+            response.Items.AddRange(menus.Select(menu => new MenuResponse
+            {
+                Id = menu.Id.ToString(),
+                Name = menu.Name,
+                Slug = menu.Slug,
+                DisplayOrder = menu.DisplayOrder,
+                CreatedAt = Timestamp.FromDateTime(DateTime.SpecifyKind(menu.CreatedAt, DateTimeKind.Utc)),
+                IsActive = menu.IsActive
+            }));
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            throw new RpcException(new Status(StatusCode.Internal, $"Something wrong with {nameof(GetMenusByPostgres)}: {ex.Message}"));
+        }
+        ;
     }
 }

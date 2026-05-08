@@ -1,11 +1,13 @@
 using MenuNews.SyncService.Application;
 using MenuNews.SyncService.Grpc.Services;
 using MenuNews.SyncService.Infrastructure;
+using MenuNews.SyncService.Infrastructure.Postgres;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplicationService();
 builder.Services.AddInfrastructureService(builder.Configuration);
+builder.Services.AddInfrastructurePostgresService(builder.Configuration);
 
 // Add services to the container.
 builder.Services.AddGrpc();

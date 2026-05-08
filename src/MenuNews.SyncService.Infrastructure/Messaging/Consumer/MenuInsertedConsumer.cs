@@ -26,10 +26,10 @@ public sealed class MenuInsertedConsumer : DirectConsumerBase<MenuSyncEvent>
 
     protected override async Task HandleMessageAsync(MenuSyncEvent message, string rountingKey, CancellationToken cancellationToken)
     {
-        var filter = Builders<MenuReadModel>.Filter.Eq(m => m.Id, message.MenuId);
+        var filter = Builders<MenuReadModel>.Filter.Eq(m => m.Id, message.Id);
         var doc = new MenuReadModel
         {
-            Id = message.MenuId,
+            Id = message.Id,
             Name = message.Name,
             Slug = message.Slug,
             DisplayOrder = message.DisplayOrder,
@@ -58,6 +58,6 @@ public sealed class MenuInsertedConsumer : DirectConsumerBase<MenuSyncEvent>
             cancellationToken
         );
 
-        logger.LogInformation($"MenuReadModel upserted: {message.MenuId} with {message.News.Count} news item(s)");
+        logger.LogInformation($"MenuReadModel upserted: {message.Id} with {message.News.Count} news item(s)");
     }
 }

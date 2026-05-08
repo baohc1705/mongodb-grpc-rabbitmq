@@ -1,7 +1,9 @@
 using AutoMapper;
 using MediatR;
 using MenuNews.SyncService.Application.Common.Exceptions;
-using MenuNews.SyncService.Application.Common.Interfaces;
+using MenuNews.SyncService.Application.Common.Interfaces.Messaging;
+using MenuNews.SyncService.Application.Common.Interfaces.SqlRepository;
+using MenuNews.SyncService.Application.Common.Interfaces.UnitOfWork;
 using MenuNews.SyncService.Application.Constants;
 using MenuNews.SyncService.Application.DTOs;
 using MenuNews.SyncService.Domain.Entities;
@@ -11,7 +13,7 @@ namespace MenuNews.SyncService.Application.Features.Menus.Commands.CreateMenuWit
 
 public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNewsCommand, MenuDto>
 {
-    private readonly IUnitOfWork unitOfWork;
+    private readonly ISqlUnitOfWork unitOfWork;
     private readonly IMenuRepository menuRepository;
     private readonly INewsMenuRepository newsMenuRepository;
     private readonly INewsRepository newsRepository;
@@ -19,7 +21,7 @@ public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNe
     private readonly IMapper mapper;
 
     public CreateMenuWithNewsCommandHandler(
-        IUnitOfWork unitOfWork,
+        ISqlUnitOfWork unitOfWork,
         IMapper mapper,
         IRabbitMqPublisher publisher,
         IMenuRepository menuRepository,
@@ -191,8 +193,8 @@ public class CreateMenuWithNewsCommandHandler : IRequestHandler<CreateMenuWithNe
     {
         var menuSyncEvent = new MenuSyncEvent
         {
-            EventType = Domain.Enums.SyncEventType.UPSERT,
-            MenuId = menu.Id,
+            EventType = MenuRoutingKey.Inserted,
+            Id = menu.Id,
             Name = menu.Name,
             Slug = menu.Slug,
             DisplayOrder = menu.DisplayOrder,

@@ -1,6 +1,8 @@
 using AutoMapper;
 using MediatR;
-using MenuNews.SyncService.Application.Common.Interfaces;
+using MenuNews.SyncService.Application.Common.Interfaces.MongoRepository;
+using MenuNews.SyncService.Application.Common.Interfaces.SqlRepository;
+using MenuNews.SyncService.Application.Common.Interfaces.UnitOfWork;
 using MenuNews.SyncService.Application.Constants;
 using MenuNews.SyncService.Application.DTOs;
 using MenuNews.SyncService.Domain.Events;
@@ -10,7 +12,7 @@ namespace MenuNews.SyncService.Application.Features.News.Commands.UpdateNews;
 
 public class UpdateNewsCommandHandler : IRequestHandler<UpdateNewsCommand, NewsDto>
 {
-    private readonly IUnitOfWork unitOfWork;
+    private readonly ISqlUnitOfWork unitOfWork;
     private readonly INewsReadRepository newsReadRepository;
     private readonly INewsRepository newsRepository;
     private readonly INewsMenuRepository newsMenuRepository;
@@ -18,7 +20,7 @@ public class UpdateNewsCommandHandler : IRequestHandler<UpdateNewsCommand, NewsD
     private readonly IMapper mapper;
 
     public UpdateNewsCommandHandler(
-        IUnitOfWork unitOfWork,
+        ISqlUnitOfWork unitOfWork,
         INewsReadRepository newsReadRepository,
         IMapper mapper,
         INewsRepository newsRepository,

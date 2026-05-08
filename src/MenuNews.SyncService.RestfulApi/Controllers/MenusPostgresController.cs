@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using MenuNews.SyncService.Application.Features.Menus.Commands.CreateMenuWithNewsPostgres;
 using MenuNews.SyncService.Application.Features.Menus.Queries.GetMenusPostgres;
 using Microsoft.AspNetCore.Mvc;
 
@@ -34,4 +35,22 @@ public class MenusPostgresController : ControllerBase
             });
         }
     }
-}
+
+    [HttpPost("postgres")]
+    public async Task<IActionResult> CreatePostgres([FromBody] CreateMenuWithNewsPostgresCommand command, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var res = await mediator.Send(command, cancellationToken);
+            return Ok(res);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message = "Internal Server Error",
+                detail = ex.Message
+            });
+        }
+    }
+} 

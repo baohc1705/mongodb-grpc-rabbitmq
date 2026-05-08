@@ -28,7 +28,7 @@ public sealed class MenuDeletedConsumer : DirectConsumerBase<MenuSyncEvent>
 
     protected override async Task HandleMessageAsync(MenuSyncEvent message, string rountingKey, CancellationToken cancellationToken)
     {
-        await collection.DeleteOneAsync(m => m.Id.Equals(message.MenuId), cancellationToken);
-        logger.LogInformation($"{nameof(MenuDeletedConsumer)} deleted menuId = [{message.MenuId}]");
+        await collection.DeleteOneAsync(m => m.Id.Equals(message.Id), cancellationToken);
+        logger.LogInformation($"{nameof(MenuDeletedConsumer)} deleted menuId = [{message.Id}]");
     }
 }

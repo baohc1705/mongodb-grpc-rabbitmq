@@ -1,10 +1,10 @@
-﻿using MenuNews.SyncService.Application.Common.Interfaces;
+﻿using MenuNews.SyncService.Application.Common.Interfaces.SqlRepository;
 using MenuNews.SyncService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace MenuNews.SyncService.Infrastructure.Persistence.Repositories;
 
-public sealed class NewsMenuRepository : BaseRepository<NewsMenu>, INewsMenuRepository
+public sealed class NewsMenuRepository : BaseRepository<NewsMenu, AppDbContext>, INewsMenuRepository
 {
     public NewsMenuRepository(AppDbContext context) : base(context)
     {

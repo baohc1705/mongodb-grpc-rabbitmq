@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using MenuNews.SyncService.Application.Common.Exceptions;
-using MenuNews.SyncService.Application.Common.Interfaces;
+using MenuNews.SyncService.Application.Common.Interfaces.Messaging;
+using MenuNews.SyncService.Application.Common.Interfaces.SqlRepository;
+using MenuNews.SyncService.Application.Common.Interfaces.UnitOfWork;
 using MenuNews.SyncService.Application.Constants;
 using MenuNews.SyncService.Domain.Entities;
 using MenuNews.SyncService.Domain.Events;
@@ -9,13 +11,13 @@ namespace MenuNews.SyncService.Application.Features.Menus.Commands.DeleteMenu;
 
 public sealed class DeleteMenuCommandHandler : IRequestHandler<DeleteMenuCommand>
 {
-    private readonly IUnitOfWork unitOfWork;
+    private readonly ISqlUnitOfWork unitOfWork;
     private readonly IMenuRepository menuRepository;
     private readonly INewsMenuRepository newsMenuRepository;
     private readonly IRabbitMqPublisher publisher;
 
     public DeleteMenuCommandHandler(
-        IUnitOfWork unitOfWork,
+        ISqlUnitOfWork unitOfWork,
         IRabbitMqPublisher publisher,
         IMenuRepository menuRepository,
         INewsMenuRepository newsMenuRepository)
@@ -54,6 +56,6 @@ public sealed class DeleteMenuCommandHandler : IRequestHandler<DeleteMenuCommand
         }
     }
 
-    private MenuSyncEvent BuildingMenuMessage(Menu menu) => new MenuSyncEvent { MenuId = menu.Id };
+    private MenuSyncEvent BuildingMenuMessage(Menu menu) => new MenuSyncEvent { Id = menu.Id };
 
 }
